@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmegaNimbus — Cloud Cybersecurity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET & BASE ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #05070d;
+      --deep:    #0a0d17;
+      --surface: #0f1220;
+      --card:    #131724;
+      --border:  rgba(255,255,255,0.06);
+      --red:     #c0392b;
+      --red-hot: #e74c3c;
+      --red-glow:#ff2a1a;
+      --white:   #f0f0f0;
+      --muted:   #6b7280;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--body);
+      font-weight: 300;
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    /* ─── CUSTOM CURSOR ─── */
+    #cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--red);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, background 0.2s;
+      mix-blend-mode: normal;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(192,57,43,0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, width 0.2s, height 0.2s, border-color 0.2s;
+    }
+    body:hover #cursor { opacity: 1; }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.35;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      background: rgba(5,7,13,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--red);
+      transition: width 0.25s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(192,57,43,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(192,57,43,0.04) 0%, transparent 60%);
+    }
+
+    /* Grid lines */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.3s;
+    }
+
+    .hero-title {
+      font-family: var(--display);
+      font-size: clamp(4rem, 12vw, 9rem);
+      line-height: 0.92;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.5s;
+    }
+    .hero-title .omega { color: var(--white); }
+    .hero-title .nimbus { color: var(--red); }
+
+    .hero-sub {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.4em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.7s;
+    }
+
+    .hero-desc {
+      max-width: 520px;
+      font-size: 0.95rem;
+      color: rgba(240,240,240,0.55);
+      line-height: 1.8;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.9s;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 1.1s;
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.85rem 2rem;
+      text-decoration: none;
+      transition: all 0.25s;
+      cursor: none;
+    }
+    .btn-primary {
+      background: var(--red);
+      color: var(--white);
+      border: 1px solid var(--red);
+    }
+    .btn-primary:hover {
+      background: var(--red-hot);
+      box-shadow: 0 0 24px rgba(231,76,60,0.4);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* Scan line animation */
+    .scanline {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      animation: scan 4s linear infinite;
+      opacity: 0.3;
+    }
+    @keyframes scan {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+
+    /* ─── SECTION BASE ─── */
+    section {
+      padding: 7rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.35em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .section-title {
+      font-family: var(--display);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 0.06em;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .section-line {
+      width: 40px;
+      height: 2px;
+      background: var(--red);
+      margin-bottom: 3rem;
+    }
+
+    /* ─── ABOUT ─── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .about-text p {
+      color: rgba(240,240,240,0.6);
+      margin-bottom: 1.2rem;
+      font-size: 0.95rem;
+    }
+
+    .about-text p strong {
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--red);
+    }
+    .stat-card:hover { border-color: rgba(192,57,43,0.3); }
+
+    .stat-number {
+      font-family: var(--display);
+      font-size: 2.5rem;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* Skills tags */
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 2rem;
+    }
+
+    .skill-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 0.35rem 0.8rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .skill-tag:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ─── PORTFOLIO ─── */
+    #portfolio { padding: 7rem 4rem; max-width: 1200px; margin: 0 auto; }
+
+    .portfolio-header { margin-bottom: 3rem; }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      background: var(--border);
+    }
+
+    .project-card {
+      background: var(--card);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+      cursor: none;
+    }
+    .project-card:hover { background: #161b2e; }
+
+    .project-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .project-card:hover::after { transform: scaleX(1); }
+
+    .project-type {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .project-title {
+      font-family: var(--display);
+      font-size: 1.4rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+      line-height: 1.1;
+    }
+
+    .project-desc {
+      font-size: 0.82rem;
+      color: rgba(240,240,240,0.5);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .project-tag {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.6rem;
+      background: rgba(192,57,43,0.1);
+      border: 1px solid rgba(192,57,43,0.2);
+      color: var(--red);
+    }
+
+    .project-status {
+      position: absolute;
+      top: 1.5rem; right: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      padding: 0.2rem 0.6rem;
+      text-transform: uppercase;
+    }
+    .status-wip {
+      border: 1px solid rgba(255,200,0,0.3);
+      color: rgba(255,200,0,0.7);
+    }
+    .status-live {
+      border: 1px solid rgba(0,255,100,0.3);
+      color: rgba(0,255,100,0.7);
+    }
+    .status-planned {
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ─── BLOG ─── */
+    #blog { padding: 7rem 4rem; max-width: 1200px; margin: 0 auto; }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--border);
+    }
+
+    .blog-card {
+      background: var(--card);
+      padding: 2.5rem;
+      cursor: none;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .blog-card:hover { background: #161b2e; }
+    .blog-card.featured { grid-column: 1 / -1; }
+
+    .blog-date {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .blog-category {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .blog-title {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 0.8rem;
+    }
+    .blog-card.featured .blog-title { font-size: 2.2rem; }
+
+    .blog-excerpt {
+      font-size: 0.82rem;
+      color: rgba(240,240,240,0.5);
+      line-height: 1.7;
+    }
+
+    .blog-arrow {
+      position: absolute;
+      bottom: 2rem; right: 2rem;
+      font-size: 1.2rem;
+      color: var(--red);
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all 0.3s;
+    }
+    .blog-card:hover .blog-arrow { opacity: 1; transform: translateX(0); }
+
+    /* ─── CONTACT ─── */
+    #contact {
+      padding: 7rem 4rem;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact-intro {
+      font-size: 0.9rem;
+      color: rgba(240,240,240,0.5);
+      max-width: 480px;
+      margin: 0 auto 3rem;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      text-align: left;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    input, textarea {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-family: var(--body);
+      font-size: 0.88rem;
+      padding: 0.85rem 1rem;
+      outline: none;
+      transition: border-color 0.25s;
+      resize: none;
+      cursor: none;
+    }
+    input:focus, textarea:focus { border-color: var(--red); }
+
+    textarea { min-height: 130px; }
+
+    .form-submit {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    /* Social links */
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 3rem;
+    }
+
+    .social-link {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .social-link:hover { color: var(--red); }
+    .social-link::before {
+      content: '//';
+      color: var(--red);
+      opacity: 0.5;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+      color: var(--white);
+    }
+    .footer-logo span { color: var(--red); }
+
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    .footer-kanji {
+      font-size: 0.75rem;
+      color: var(--red);
+      opacity: 0.5;
+      letter-spacing: 0.3em;
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 2rem; }
+      section, #portfolio, #blog, #contact { padding: 5rem 2rem; }
+      #about { grid-template-columns: 1fr; gap: 3rem; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .blog-card.featured { grid-column: 1; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .projects-grid { gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom cursor -->
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#hero" class="nav-logo">OMEGA<span>NIMBUS</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#portfolio">Projects</a></li>
+      <li><a href="#blog">Writeups</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="scanline"></div>
+
+    <p class="hero-eyebrow">// Cloud Cybersecurity — Barcelona</p>
+    <h1 class="hero-title">
+      <span class="omega">OMEGA</span><br>
+      <span class="nimbus">NIMBUS</span>
+    </h1>
+    <p class="hero-sub">鬼 雲 &nbsp;·&nbsp; Oni + Nimbus</p>
+    <p class="hero-desc">
+      Security research, cloud architecture, and threat analysis.
+      AWS-certified. Offensive-minded. Defense-first.
+    </p>
+    <div class="hero-cta">
+      <a href="#portfolio" class="btn btn-primary">View Projects</a>
+      <a href="#blog" class="btn btn-ghost">Read Writeups</a>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-text reveal">
+      <p class="section-label">// About</p>
+      <h2 class="section-title">Albert Sicart</h2>
+      <div class="section-line"></div>
+      <p>
+        <strong>Cloud Security Engineer & Cyber Security Consultant</strong> based in Barcelona.
+        Currently at Azertium IT, focused on security risk assessment and GRC consulting
+        across enterprise environments.
+      </p>
+      <p>
+        AWS Certified across the full security path — Cloud Practitioner, Solutions Architect Associate,
+        and Security Specialty. Hands-on across both offensive and defensive disciplines:
+        OSINT, digital forensics, threat hunting, web application security, and network analysis.
+      </p>
+      <p>
+        Background in Digital Humanities and critical thinking that shapes a unique approach to
+        security: adversarial, analytical, and human-centered.
+      </p>
+      <div class="skills-wrap">
+        <span class="skill-tag">AWS Security</span>
+        <span class="skill-tag">Cloud Architecture</span>
+        <span class="skill-tag">GRC / Risk</span>
+        <span class="skill-tag">Threat Hunting</span>
+        <span class="skill-tag">Web App Security</span>
+        <span class="skill-tag">Burp Suite</span>
+        <span class="skill-tag">OSINT</span>
+        <span class="skill-tag">Digital Forensics</span>
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">Network Analysis</span>
+        <span class="skill-tag">Blue Team</span>
+        <span class="skill-tag">Hack The Box</span>
+      </div>
+    </div>
+
+    <div class="about-stats reveal">
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">AWS Certifications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">2+</div>
+        <div class="stat-label">Years in Cybersecurity</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">360°</div>
+        <div class="stat-label">Security Coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">∞</div>
+        <div class="stat-label">Threat Surface Awareness</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PORTFOLIO -->
+  <div id="portfolio">
+    <div class="portfolio-header reveal">
+      <p class="section-label">// Projects</p>
+      <h2 class="section-title">Portfolio</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <span class="project-status status-wip">WIP</span>
+        <p class="project-type">// Cloud Architecture</p>
+        <h3 class="project-title">Secure VPC Architecture on AWS</h3>
+        <p class="project-desc">
+          Multi-tier segmented VPC with public/private subnets, NAT Gateway, NACLs vs Security Groups comparison, and CloudTrail logging. Designed with the AWS Well-Architected Framework Security Pillar.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">AWS</span>
+          <span class="project-tag">VPC</span>
+          <span class="project-tag">CloudTrail</span>
+          <span class="project-tag">IAM</span>
+          <span class="project-tag">Terraform</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <span class="project-status status-planned">Planned</span>
+        <p class="project-type">// Offensive Cloud</p>
+        <h3 class="project-title">CloudGoat Attack Scenarios</h3>
+        <p class="project-desc">
+          Documented exploitation of intentionally vulnerable AWS environments using Rhino Security Labs' CloudGoat. Privilege escalation paths, IAM misconfigurations, and S3 exposure scenarios.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">CloudGoat</span>
+          <span class="project-tag">AWS Pentest</span>
+          <span class="project-tag">IAM Escalation</span>
+          <span class="project-tag">Pacu</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <span class="project-status status-planned">Planned</span>
+        <p class="project-type">// Threat Detection</p>
+        <h3 class="project-title">AWS Security Monitoring Stack</h3>
+        <p class="project-desc">
+          End-to-end threat detection pipeline using GuardDuty, Security Hub, and CloudWatch. Alert correlation and automated response via Lambda. Simulated attack scenarios for validation.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">GuardDuty</span>
+          <span class="project-tag">Security Hub</span>
+          <span class="project-tag">Lambda</span>
+          <span class="project-tag">SIEM</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <span class="project-status status-planned">Planned</span>
+        <p class="project-type">// Network Security</p>
+        <h3 class="project-title">Segmented Lab Network</h3>
+        <p class="project-desc">
+          On-prem network lab with VLAN segmentation, firewall rules, IDS/IPS, and attack/defense scenarios. Documented for both blue and red team exercises.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">GNS3</span>
+          <span class="project-tag">VLANs</span>
+          <span class="project-tag">Snort</span>
+          <span class="project-tag">pfSense</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <span class="project-status status-planned">Planned</span>
+        <p class="project-type">// GRC + Cloud</p>
+        <h3 class="project-title">AWS Compliance Mapping</h3>
+        <p class="project-desc">
+          Mapping of AWS native controls to ISO 27001, GDPR, and ENS frameworks. Control matrix, gap analysis, and remediation playbooks for a fictional SME environment.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">ISO 27001</span>
+          <span class="project-tag">GDPR</span>
+          <span class="project-tag">AWS Config</span>
+          <span class="project-tag">ENS</span>
+        </div>
+      </div>
+
+      <div class="project-card reveal">
+        <span class="project-status status-wip">WIP</span>
+        <p class="project-type">// OSINT</p>
+        <h3 class="project-title">OSINT Automation Toolkit</h3>
+        <p class="project-desc">
+          Python-based OSINT automation for passive reconnaissance. Target profiling, infrastructure enumeration, and report generation. Designed for authorized red team engagements.
+        </p>
+        <div class="project-tags">
+          <span class="project-tag">Python</span>
+          <span class="project-tag">Recon</span>
+          <span class="project-tag">OSINT</span>
+          <span class="project-tag">Automation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- BLOG -->
+  <div id="blog">
+    <div class="portfolio-header reveal">
+      <p class="section-label">// Research & Writeups</p>
+      <h2 class="section-title">Writeups</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="blog-grid">
+      <div class="blog-card featured reveal">
+        <p class="blog-category">// AWS Security</p>
+        <p class="blog-date">Coming Soon</p>
+        <h3 class="blog-title">IAM Privilege Escalation: From ReadOnly to Admin in 4 Steps</h3>
+        <p class="blog-excerpt">
+          A walkthrough of a common IAM misconfiguration chain that allows an attacker with minimal initial permissions to achieve full administrative access in an AWS environment. Includes detection and remediation guidance.
+        </p>
+        <span class="blog-arrow">→</span>
+      </div>
+
+      <div class="blog-card reveal">
+        <p class="blog-category">// HTB Writeup</p>
+        <p class="blog-date">Coming Soon</p>
+        <h3 class="blog-title">HackTheBox: Chemistry</h3>
+        <p class="blog-excerpt">
+          Full walkthrough of the Chemistry machine — enumeration, foothold, privilege escalation.
+        </p>
+        <span class="blog-arrow">→</span>
+      </div>
+
+      <div class="blog-card reveal">
+        <p class="blog-category">// Cloud Architecture</p>
+        <p class="blog-date">Coming Soon</p>
+        <h3 class="blog-title">Designing Zero Trust on AWS: A Practical Approach</h3>
+        <p class="blog-excerpt">
+          Breaking down Zero Trust principles into concrete AWS implementation patterns: identity-first access, micro-segmentation, and continuous verification.
+        </p>
+        <span class="blog-arrow">→</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- CONTACT -->
+  <div id="contact">
+    <p class="section-label reveal">// Contact</p>
+    <h2 class="section-title reveal">Get in Touch</h2>
+    <div class="section-line" style="margin: 0 auto 2rem; reveal"></div>
+    <p class="contact-intro reveal">
+      Open to collaborations, research opportunities, and senior cloud security roles.
+      Based in Barcelona. Remote-friendly.
+    </p>
+
+    <form class="contact-form reveal" id="contactForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" placeholder="John Doe" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@company.com" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" placeholder="Project / Opportunity / Research" required />
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" placeholder="Tell me about your project or opportunity..." required></textarea>
+      </div>
+      <div class="form-submit">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Send Message</button>
+      </div>
+      <div id="formStatus" style="text-align:center; margin-top:1rem; font-family:var(--mono); font-size:0.75rem; letter-spacing:0.15em;"></div>
+    </form>
+
+    <div class="social-links reveal">
+      <a href="https://linkedin.com/in/albertsicart" class="social-link" target="_blank">LinkedIn</a>
+      <a href="https://github.com" class="social-link" target="_blank">GitHub</a>
+      <a href="mailto:sicart@protonmail.ch" class="social-link">Email</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">OMEGA<span>NIMBUS</span></div>
+    <div class="footer-copy">© 2025 Albert Sicart · omeganimbus.com</div>
+    <div class="footer-kanji">鬼 雲</div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    });
+
+    function animateRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.querySelectorAll('a, button, .project-card, .blog-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(1.8)';
+        ring.style.width = '50px'; ring.style.height = '50px';
+        ring.style.borderColor = 'rgba(192,57,43,0.8)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+        ring.style.width = '36px'; ring.style.height = '36px';
+        ring.style.borderColor = 'rgba(192,57,43,0.5)';
+      });
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Contact form
+    const API_ENDPOINT = 'https://06w1j6z7kg.execute-api.eu-north-1.amazonaws.com/default/omeganimbus-contact-form';
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formStatus = document.getElementById('formStatus');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+      formStatus.style.color = 'var(--muted)';
+      formStatus.textContent = '';
+
+      const payload = {
+        name:    document.getElementById('name').value,
+        email:   document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+      };
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          formStatus.style.color = 'rgba(0,255,100,0.8)';
+          formStatus.textContent = '// Message sent successfully';
+          form.reset();
+        } else {
+          throw new Error('Server error');
+        }
+      } catch (err) {
+        formStatus.style.color = 'var(--red)';
+        formStatus.textContent = '// Error sending message. Try again.';
+      } finally {
+        submitBtn.textContent = 'Send Message';
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Active nav link
+    const sections = document.querySelectorAll('[id]');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 200) current = s.id;
+      });
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'var(--white)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
