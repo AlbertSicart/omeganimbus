@@ -724,6 +724,17 @@
       <a href="#portfolio" class="btn btn-primary">View Projects</a>
       <a href="#blog" class="btn btn-ghost">Read Writeups</a>
     </div>
+    <div id="visitor-counter" style="
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-top: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 1.4s;
+      position: relative;
+      z-index: 2;
+    ">// <span id="visit-count">—</span> VISITORS</div>
   </div>
 
   <!-- ABOUT -->
@@ -1025,6 +1036,18 @@
       });
     }, { threshold: 0.1 });
     reveals.forEach(el => observer.observe(el));
+
+    // Visitor counter
+    const COUNTER_ENDPOINT = 'https://5p1tgv1b09.execute-api.eu-north-1.amazonaws.com/default/omeganimbus-visitor-counter';
+    fetch(COUNTER_ENDPOINT)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('visit-count').textContent = data.visits.toLocaleString();
+        document.getElementById('visitor-counter').style.opacity = '1';
+      })
+      .catch(() => {
+        document.getElementById('visitor-counter').style.display = 'none';
+      });
 
     // Contact form
     const API_ENDPOINT = 'https://06w1j6z7kg.execute-api.eu-north-1.amazonaws.com/default/omeganimbus-contact-form';
