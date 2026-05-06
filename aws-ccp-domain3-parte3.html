@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* EC2 ARCHITECTURE */
+  .ec2-arch {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .ec2-arch-title { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .arch-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .arch-box {
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .arch-box h4 { font-weight: 600; margin-bottom: 4px; font-size: 12px; }
+  .arch-box p  { font-size: 11px; color: var(--muted); margin: 0; font-weight: 300; }
+  .ab-host    { background: var(--blue-dim);   border: 1px solid rgba(88,166,255,0.2); }
+  .ab-host h4 { color: var(--blue); }
+  .ab-storage { background: var(--yellow-dim); border: 1px solid rgba(210,153,34,0.2); }
+  .ab-storage h4 { color: var(--yellow); }
+  .ab-ebs     { background: var(--green-dim);  border: 1px solid rgba(63,185,80,0.2); }
+  .ab-ebs h4  { color: var(--green); }
+  .ab-eni     { background: var(--purple-dim); border: 1px solid rgba(188,140,255,0.2); }
+  .ab-eni h4  { color: var(--purple); }
+
+  /* INSTANCE TYPES */
+  .inst-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .inst-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .inst-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .inst-table tr:nth-child(even) td { background: var(--surface); }
+  .inst-table tr:nth-child(odd)  td { background: var(--bg); }
+  .inst-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* COMPUTE OPTIONS */
+  .compute-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .compute-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .compute-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .compute-icon { font-size: 16px; flex-shrink: 0; }
+  .compute-name { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .compute-body { padding: 10px 14px; }
+  .compute-body .what { font-size: 12px; color: #cdd9e5; font-weight: 300; margin-bottom: 5px; }
+  .compute-body .when { font-size: 11px; color: var(--muted); font-style: italic; font-weight: 300; }
+  .compute-body .keyword { display: inline-block; margin-top: 5px; font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; }
+
+  .c-ecs      .compute-header { background: var(--orange-dim); border-bottom-color: rgba(249,115,22,0.2); }
+  .c-ecs      .compute-name   { color: var(--orange); }
+  .c-ecs      .keyword        { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+  .c-eks      .compute-header { background: var(--yellow-dim); border-bottom-color: rgba(210,153,34,0.2); }
+  .c-eks      .compute-name   { color: var(--yellow); }
+  .c-eks      .keyword        { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .c-lambda   .compute-header { background: var(--purple-dim); border-bottom-color: rgba(188,140,255,0.2); }
+  .c-lambda   .compute-name   { color: var(--purple); }
+  .c-lambda   .keyword        { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .c-beanstalk .compute-header { background: var(--teal-dim); border-bottom-color: rgba(57,208,216,0.2); }
+  .c-beanstalk .compute-name  { color: var(--teal); }
+  .c-beanstalk .keyword       { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(57,208,216,0.3); }
+
+  /* LB TABLE */
+  .lb-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .lb-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .lb-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .lb-table tr:nth-child(even) td { background: var(--surface); }
+  .lb-table tr:nth-child(odd)  td { background: var(--bg); }
+  .lb-name { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text); }
+
+  /* META vs USERDATA */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 13px 14px; }
+  .meta-card h3 { font-size: 12px; font-weight: 600; font-family: var(--mono); margin-bottom: 6px; }
+  .meta-card.instance-meta { border-top: 2px solid var(--blue); }
+  .meta-card.instance-meta h3 { color: var(--blue); }
+  .meta-card.user-data { border-top: 2px solid var(--green); }
+  .meta-card.user-data h3 { color: var(--green); }
+  .meta-card p  { font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 300; }
+  .meta-card .url { font-family: var(--mono); font-size: 10px; color: var(--muted); word-break: break-all; }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .arch-row, .compute-grid, .meta-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 3</h1>
+    <div class="subtitle">Amazon EC2 · Contenedores · Lambda · Auto Scaling · Load Balancers</div>
+  </header>
+
+  <!-- EC2 ARQUITECTURA -->
+  <section>
+    <div class="section-label">01 · Amazon EC2</div>
+    <h2>Arquitectura de EC2 — Componentes clave</h2>
+
+    <div class="ec2-arch">
+      <div class="ec2-arch-title">Anatomía de una instancia EC2</div>
+      <div class="arch-row">
+        <div class="arch-box ab-host">
+          <h4>Host EC2 (hardware físico)</h4>
+          <p>Gestionado por AWS. Puede ser <strong>compartido</strong> (por defecto, aislado entre clientes) o <strong>dedicado</strong> (pagas por todo el host). La instancia vive en una AZ concreta.</p>
+        </div>
+        <div class="arch-box ab-storage">
+          <h4>Instance Store (almacén de instancia)</h4>
+          <p>Almacenamiento local del host. <strong>Temporal</strong>: se pierde si la instancia se mueve a otro host, se detiene o falla.</p>
+        </div>
+        <div class="arch-box ab-ebs">
+          <h4>Amazon EBS (almacenamiento persistente)</h4>
+          <p>Volúmenes de bloque persistentes conectados a EC2 vía red de almacenamiento de la VPC. <strong>Resistencia zonal</strong>: solo conectables desde la misma AZ.</p>
+        </div>
+        <div class="arch-box ab-eni">
+          <h4>ENI — Elastic Network Interface</h4>
+          <p>Interfaz de red asignada al host físico al lanzar la instancia. Se pueden añadir múltiples ENIs a una instancia para segmentación de red.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--yellow);">
+      <div class="def-title" style="color: var(--yellow);">Instance Store vs EBS</div>
+      <strong>Instance Store</strong> = temporal. Alta velocidad. Se pierde al detener/mover la instancia. Nunca usar para datos persistentes.<br>
+      <strong>EBS</strong> = persistente. Sobrevive a reinicios. Vinculado a la AZ. No se puede conectar a instancias de otra AZ.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- TIPOS DE INSTANCIA -->
+  <section>
+    <div class="section-label">02 · Tipos de instancia EC2</div>
+    <h2>5 categorías de instancias</h2>
+
+    <table class="inst-table">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Porción de recursos</th>
+          <th>Casos de uso típicos</th>
+          <th>Ejemplo familias</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="inst-name">Uso general</span></td>
+          <td>CPU y memoria equilibrados</td>
+          <td>Cargas estacionarias, servidores web, entornos de desarrollo. <strong>Opción por defecto.</strong></td>
+          <td><span class="badge blue">t3, m6i</span></td>
+        </tr>
+        <tr>
+          <td><span class="inst-name">Computación optimizada</span></td>
+          <td>Más CPU que memoria</td>
+          <td>Procesamiento multimedia, machine learning, juegos, modelado científico, HPC.</td>
+          <td><span class="badge green">c6i, c7g</span></td>
+        </tr>
+        <tr>
+          <td><span class="inst-name">Memoria optimizada</span></td>
+          <td>Más memoria que CPU</td>
+          <td>Bases de datos en memoria, procesamiento de grandes datasets, SAP HANA.</td>
+          <td><span class="badge purple">r6i, x2idn</span></td>
+        </tr>
+        <tr>
+          <td><span class="inst-name">Computación acelerada</span></td>
+          <td>GPU / FPGA hardware</td>
+          <td>Machine learning, rendering gráfico, deep learning, procesamiento de vídeo.</td>
+          <td><span class="badge yellow">p4, g5, f1</span></td>
+        </tr>
+        <tr>
+          <td><span class="inst-name">Almacenamiento optimizado</span></td>
+          <td>Alta I/O disco</td>
+          <td>Data warehousing, Elasticsearch, bases de datos analíticas, I/O secuencial y aleatorio.</td>
+          <td><span class="badge teal">i4i, d3</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px; color:var(--muted);">Las instancias <strong>ampliables</strong> (tipo T) tienen créditos de CPU: carga normal baja + ráfaga temporal. Más económicas para cargas irregulares.</p>
+  </section>
+
+  <hr>
+
+  <!-- AMI Y METADATOS -->
+  <section>
+    <div class="section-label">03 · AMI y datos de instancia</div>
+    <h2>AMI · Metadatos · User Data</h2>
+
+    <div class="def" style="border-left-color: var(--blue);">
+      <div class="def-title" style="color: var(--blue);">AMI (Amazon Machine Image)</div>
+      Imagen que contiene SO, configuración y software preinstalado para lanzar instancias EC2. Una <strong>AMI dorada</strong> incluye parches de seguridad, agentes de monitorización, software corporativo y configuración estándar aprobada.
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-card instance-meta">
+        <h3>Instance Metadata</h3>
+        <p>Datos <strong>sobre</strong> la instancia: ID de instancia, IP pública, clave pública, perfil de IAM, kernel…</p>
+        <p>Accesible desde dentro de la instancia vía:</p>
+        <div class="url">http://169.254.169.254/latest/meta-data/</div>
+      </div>
+      <div class="meta-card user-data">
+        <h3>User Data</h3>
+        <p>Scripts que se ejecutan <strong>al iniciar</strong> la instancia por primera vez. Para automatizar configuración, instalar paquetes, arrancar servicios.</p>
+        <p>No contiene información sobre la instancia (ID, IP, etc.).</p>
+        <div class="url">http://169.254.169.254/latest/user-data/</div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- OTRAS OPCIONES DE COMPUTACIÓN -->
+  <section>
+    <div class="section-label">04 · Opciones de computación más allá de EC2</div>
+    <h2>Contenedores · Lambda · Elastic Beanstalk</h2>
+
+    <div class="compute-grid">
+      <div class="compute-card c-ecs">
+        <div class="compute-header">
+          <span class="compute-icon">📦</span>
+          <span class="compute-name">Amazon ECS</span>
+        </div>
+        <div class="compute-body">
+          <div class="what">Orquestación de contenedores administrada por AWS. Acepta contenedores e instrucciones de dónde y cómo ejecutarlos.</div>
+          <div class="when">Cuando quieres contenedores sin gestionar el plano de control de Kubernetes.</div>
+          <span class="keyword">contenedores · orquestación · Docker</span>
+        </div>
+      </div>
+
+      <div class="compute-card c-eks">
+        <div class="compute-header">
+          <span class="compute-icon">☸️</span>
+          <span class="compute-name">Amazon EKS</span>
+        </div>
+        <div class="compute-body">
+          <div class="what">Kubernetes gestionado en AWS. Ejecuta clústeres Kubernetes sobre instancias EC2 o Fargate.</div>
+          <div class="when">Cuando ya usas Kubernetes o necesitas su ecosistema completo.</div>
+          <span class="keyword">Kubernetes · contenedores · clúster</span>
+        </div>
+      </div>
+
+      <div class="compute-card c-lambda">
+        <div class="compute-header">
+          <span class="compute-icon">λ</span>
+          <span class="compute-name">AWS Lambda</span>
+        </div>
+        <div class="compute-body">
+          <div class="what">FaaS (Function as a Service). Código ejecutado en respuesta a eventos. Sin gestión de servidores. Facturación por duración de ejecución (ms).</div>
+          <div class="when">Lógica de negocio basada en eventos, automatizaciones, microservicios serverless.</div>
+          <span class="keyword">serverless · event-driven · FaaS</span>
+        </div>
+      </div>
+
+      <div class="compute-card c-beanstalk">
+        <div class="compute-header">
+          <span class="compute-icon">🌱</span>
+          <span class="compute-name">AWS Elastic Beanstalk</span>
+        </div>
+        <div class="compute-body">
+          <div class="what">PaaS que gestiona automáticamente la infraestructura (EC2, ELB, Auto Scaling). Solo subes el código.</div>
+          <div class="when">Cuando quieres desplegar apps sin gestionar infraestructura pero manteniendo control sobre la configuración.</div>
+          <span class="keyword">PaaS · deploy · código sin gestionar infra</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--purple);">
+      <div class="def-title" style="color: var(--purple);">EC2 vs Contenedores — ¿Por qué contenedores?</div>
+      En EC2 cada instancia tiene su propio SO invitado completo → mucha memoria y disco consumida en duplicación de SO.<br>
+      Los contenedores comparten el SO del host a través de un <strong>motor de contenedores</strong>. Un SO, múltiples procesos aislados → mucho más eficiente en recursos.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- AUTO SCALING Y LOAD BALANCERS -->
+  <section>
+    <div class="section-label">05 · Alta disponibilidad y elasticidad</div>
+    <h2>Auto Scaling + Load Balancers</h2>
+
+    <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Usados conjuntamente para lograr <strong>alta disponibilidad, tolerancia a fallos y elasticidad</strong>. Auto Scaling añade/elimina instancias según demanda; el Load Balancer distribuye el tráfico entre ellas.</p>
+
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>Tipo de ELB</th>
+          <th>Capa OSI</th>
+          <th>Protocolo</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="lb-name">Classic Load Balancer</span></td>
+          <td>L4 / L7</td>
+          <td>HTTP, HTTPS, TCP</td>
+          <td>Legado. Evitar para nuevas arquitecturas.</td>
+        </tr>
+        <tr>
+          <td><span class="lb-name">Application Load Balancer (ALB)</span></td>
+          <td>L7 (aplicación)</td>
+          <td>HTTP, HTTPS, WebSocket</td>
+          <td>Apps web, microservicios, enrutamiento por URL/cabeceras/host. Opción más común para apps web.</td>
+        </tr>
+        <tr>
+          <td><span class="lb-name">Network Load Balancer (NLB)</span></td>
+          <td>L4 (transporte)</td>
+          <td>TCP, UDP, TLS</td>
+          <td>Rendimiento extremo, baja latencia, IP estática, tráfico no-HTTP.</td>
+        </tr>
+        <tr>
+          <td><span class="lb-name">Gateway Load Balancer (GWLB)</span></td>
+          <td>L3 (red)</td>
+          <td>GENEVE</td>
+          <td>Integrar appliances de red de terceros (firewalls, IDS/IPS) en el flujo de tráfico.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--green);">
+      <div class="def-title" style="color: var(--green);">Nodo de ELB y alta disponibilidad</div>
+      Al crear un ELB se crea un <strong>nodo de ELB por AZ</strong>. Para lograr alta disponibilidad real, debe haber un nodo en <strong>cada AZ</strong> que use la arquitectura. Los nodos se escalan horizontalmente de forma automática.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>EC2 = IaaS.</strong> Instancias son resistentes zonales (vinculadas a una AZ).</li>
+      <li><strong>Instance Store</strong> = temporal (se pierde al detener). <strong>EBS</strong> = persistente, vinculado a la AZ.</li>
+      <li>EBS solo se puede conectar a instancias <strong>de la misma AZ</strong>.</li>
+      <li><strong>5 categorías de instancia</strong>: uso general · computación · memoria · acelerada · almacenamiento. Elegir según la carga.</li>
+      <li><strong>Instance Metadata</strong> = info sobre la instancia (ID, IP, etc.) en 169.254.169.254/meta-data. <strong>User Data</strong> = scripts de arranque.</li>
+      <li><strong>Lambda = FaaS, serverless, event-driven.</strong> Facturación por ms de ejecución.</li>
+      <li><strong>ECS</strong> = orquestación de contenedores AWS-native. <strong>EKS</strong> = Kubernetes gestionado en AWS.</li>
+      <li><strong>ALB</strong> = capa 7, apps web. <strong>NLB</strong> = capa 4, alto rendimiento/baja latencia. <strong>GWLB</strong> = appliances de red.</li>
+      <li>Auto Scaling + ELB juntos = elasticidad + alta disponibilidad + tolerancia a fallos.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

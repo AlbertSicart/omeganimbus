@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 6</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* STORAGE TYPES */
+  .types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .type-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .type-header { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .type-label { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.06em; }
+  .type-name  { font-size: 13px; font-weight: 600; }
+  .type-body  { padding: 10px 14px; }
+  .type-body p { font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 300; }
+  .type-body .svc  { font-size: 11px; font-style: italic; color: #cdd9e5; }
+  .type-body .kw   { font-family: var(--mono); font-size: 10px; margin-top: 5px; display: inline-block; padding: 2px 6px; border-radius: 3px; }
+
+  .t-obj  .type-header { background: var(--blue-dim);   border-bottom-color: rgba(88,166,255,0.2); }
+  .t-obj  .type-name   { color: var(--blue); }
+  .t-obj  .kw          { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+  .t-file .type-header { background: var(--green-dim);  border-bottom-color: rgba(63,185,80,0.2); }
+  .t-file .type-name   { color: var(--green); }
+  .t-file .kw          { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .t-block .type-header { background: var(--yellow-dim); border-bottom-color: rgba(210,153,34,0.2); }
+  .t-block .type-name  { color: var(--yellow); }
+  .t-block .kw         { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+
+  /* S3 CLASSES TABLE */
+  .s3-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .s3-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .s3-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .s3-table tr:nth-child(even) td { background: var(--surface); }
+  .s3-table tr:nth-child(odd)  td { background: var(--bg); }
+  .s3-class { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text); }
+
+  /* EBS TYPES TABLE */
+  .ebs-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .ebs-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .ebs-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .ebs-table tr:nth-child(even) td { background: var(--surface); }
+  .ebs-table tr:nth-child(odd)  td { background: var(--bg); }
+  .ebs-type { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--text); }
+
+  /* FILE SYSTEMS GRID */
+  .fs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .fs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .fs-card h3 { font-size: 12px; font-weight: 600; font-family: var(--mono); margin-bottom: 6px; }
+  .fs-card p  { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 300; }
+  .fs-card .kw { font-family: var(--mono); font-size: 10px; display: inline-block; margin-top: 4px; }
+  .fs-efs   { border-top: 2px solid var(--green);  } .fs-efs h3   { color: var(--green); }
+  .fs-fsx-w { border-top: 2px solid var(--blue);   } .fs-fsx-w h3 { color: var(--blue); }
+  .fs-fsx-l { border-top: 2px solid var(--purple); } .fs-fsx-l h3 { color: var(--purple); }
+
+  /* STORAGE GATEWAY */
+  .gw-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .gw-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .gw-card h3 { font-size: 12px; font-weight: 600; font-family: var(--mono); margin-bottom: 6px; }
+  .gw-card p  { font-size: 11px; color: var(--muted); margin: 0; font-weight: 300; }
+  .gw-file   { border-top: 2px solid var(--blue);   } .gw-file h3   { color: var(--blue); }
+  .gw-volume { border-top: 2px solid var(--green);  } .gw-volume h3 { color: var(--green); }
+  .gw-tape   { border-top: 2px solid var(--yellow); } .gw-tape h3   { color: var(--yellow); }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 640px) {
+    .types-grid, .fs-grid, .gw-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 6</h1>
+    <div class="subtitle">S3 · EBS · EFS · FSx · Storage Gateway · AWS Backup · Clases de almacenamiento</div>
+  </header>
+
+  <!-- 3 TIPOS DE ALMACENAMIENTO -->
+  <section>
+    <div class="section-label">01 · Los 3 tipos de almacenamiento en la nube</div>
+    <h2>Objetos · Archivos · Bloques</h2>
+
+    <div class="types-grid">
+      <div class="type-card t-obj">
+        <div class="type-header">
+          <div class="type-label">TIPO 1</div>
+          <div class="type-name">Almacenamiento de objetos</div>
+        </div>
+        <div class="type-body">
+          <p>Almacena datos como objetos en buckets. Sin estructura de carpetas. Escala ilimitada. Accesible vía HTTP/S.</p>
+          <div class="svc">Amazon S3, S3 Glacier</div>
+          <span class="kw">ilimitado · global · objetos · buckets</span>
+        </div>
+      </div>
+      <div class="type-card t-file">
+        <div class="type-header">
+          <div class="type-label">TIPO 2</div>
+          <div class="type-name">Almacenamiento de archivos</div>
+        </div>
+        <div class="type-body">
+          <p>Sistema de archivos compartido montable por múltiples instancias simultáneamente. Ideal para repositorios y directorios de usuario.</p>
+          <div class="svc">Amazon EFS, Amazon FSx</div>
+          <span class="kw">compartido · NFS · SMB · múltiples instancias</span>
+        </div>
+      </div>
+      <div class="type-card t-block">
+        <div class="type-header">
+          <div class="type-label">TIPO 3</div>
+          <div class="type-name">Almacenamiento en bloques</div>
+        </div>
+        <div class="type-body">
+          <p>Volúmenes dedicados por instancia. Baja latencia. Para SO, BD y apps de alto rendimiento. Se monta como disco.</p>
+          <div class="svc">Amazon EBS, Instance Store</div>
+          <span class="kw">bloques · dedicado · baja latencia · volumen</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- S3 CLASES -->
+  <section>
+    <div class="section-label">02 · Amazon S3 — Clases de almacenamiento</div>
+    <h2>La clase correcta para cada caso de uso</h2>
+
+    <table class="s3-table">
+      <thead>
+        <tr>
+          <th>Clase</th>
+          <th>Acceso</th>
+          <th>Recuperación</th>
+          <th>Coste</th>
+          <th>Caso de uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="s3-class">S3 Standard</span></td>
+          <td>Frecuente</td>
+          <td>Inmediata</td>
+          <td><span class="badge blue">Alto</span></td>
+          <td>Contenido web activo, apps, datos de producción.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 Intelligent-Tiering</span></td>
+          <td>Variable / Desconocido</td>
+          <td>Inmediata</td>
+          <td><span class="badge blue">Medio</span></td>
+          <td>Datos con patrones de acceso impredecibles. Mueve objetos automáticamente entre niveles.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 Standard-IA</span></td>
+          <td>Infrecuente</td>
+          <td>Inmediata</td>
+          <td><span class="badge green">Medio-bajo</span></td>
+          <td>Backups, datos de recuperación ante desastres.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 One Zone-IA</span></td>
+          <td>Infrecuente</td>
+          <td>Inmediata</td>
+          <td><span class="badge green">Bajo</span></td>
+          <td>Datos recreables, copias secundarias. Solo una AZ.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 Glacier Instant</span></td>
+          <td>Rara vez</td>
+          <td>Milisegundos</td>
+          <td><span class="badge green">Bajo</span></td>
+          <td>Archivos médicos, medios de noticias con acceso ocasional.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 Glacier Flexible</span></td>
+          <td>Archivo</td>
+          <td>Minutos a 12 h</td>
+          <td><span class="badge yellow">Muy bajo</span></td>
+          <td>Archivado a largo plazo, datos regulatorios, backups anuales.</td>
+        </tr>
+        <tr>
+          <td><span class="s3-class">S3 Glacier Deep Archive</span></td>
+          <td>Archivo profundo</td>
+          <td>Hasta 12 h</td>
+          <td><span class="badge teal">Mínimo</span></td>
+          <td>Retención a 7-10 años, datos raramente consultados, conformidad legal.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--blue);">
+      <div class="def-title" style="color: var(--blue);">Funciones clave de S3</div>
+      <strong>Versionado</strong>: cada carga crea una nueva versión. Permite recuperar versiones anteriores si se sobrescribe accidentalmente.<br>
+      <strong>Lifecycle policies</strong>: mover objetos automáticamente entre clases según antigüedad o acceso.<br>
+      <strong>Nombre de bucket globalmente único</strong>: no puede coincidir con ningún otro bucket en el mundo.<br>
+      <strong>Objetos: 0 bytes a 5 TB.</strong> Datos en una región específica; no salen sin acción explícita.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EBS -->
+  <section>
+    <div class="section-label">03 · Amazon EBS — Tipos de volumen</div>
+    <h2>SSD vs HDD · ¿Cuál para cada carga?</h2>
+
+    <table class="ebs-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Tecnología</th>
+          <th>Volumen de arranque</th>
+          <th>Caso de uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ebs-type">gp3 / gp2 — SSD uso general</span></td>
+          <td>SSD</td>
+          <td><span class="badge green">Sí</span></td>
+          <td>La mayoría de cargas de trabajo. Entornos dev/test. SO. <strong>Opción por defecto recomendada.</strong></td>
+        </tr>
+        <tr>
+          <td><span class="ebs-type">io2 / io1 — SSD IOPS provisionadas</span></td>
+          <td>SSD</td>
+          <td><span class="badge green">Sí</span></td>
+          <td>Apps críticas con alto IOPS sostenido. Bases de datos grandes de producción.</td>
+        </tr>
+        <tr>
+          <td><span class="ebs-type">st1 — HDD rendimiento optimizado</span></td>
+          <td>HDD</td>
+          <td><span class="badge red">No</span></td>
+          <td>Streaming, Big Data, data warehouses, procesamiento de logs. Alto throughput secuencial.</td>
+        </tr>
+        <tr>
+          <td><span class="ebs-type">sc1 — HDD en frío</span></td>
+          <td>HDD</td>
+          <td><span class="badge red">No</span></td>
+          <td>Datos de acceso infrecuente. Menor coste de almacenamiento en EBS.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--yellow);">
+      <div class="def-title" style="color: var(--yellow);">Instance Store vs EBS</div>
+      <strong>Instance Store (efímero)</strong>: almacenamiento local del host físico. Muy rápido. Se pierde al detener/mover la instancia.<br>
+      <strong>EBS (persistente)</strong>: volumen de red. Sobrevive a reinicios. Vinculado a la AZ. Se puede hacer snapshot de EBS para backup.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- FILE SYSTEMS -->
+  <section>
+    <div class="section-label">04 · Sistemas de archivos administrados</div>
+    <h2>EFS · FSx for Windows · FSx for Lustre</h2>
+
+    <div class="fs-grid">
+      <div class="fs-card fs-efs">
+        <h3>Amazon EFS</h3>
+        <p>Sistema de archivos NFS compartido para <strong>Linux</strong>. Montable por múltiples instancias EC2 simultáneamente. Elástico y escalable. Dentro de VPC pero accesible vía VPN/Direct Connect.</p>
+        <span class="kw badge green">Linux · NFS · compartido · elástico</span>
+      </div>
+      <div class="fs-card fs-fsx-w">
+        <h3>FSx for Windows</h3>
+        <p>Sistema de archivos SMB/NTFS para <strong>Windows</strong>. Integración con Active Directory. Alta disponibilidad multi-AZ. Backup diario en S3. SSD.</p>
+        <span class="kw badge blue">Windows · SMB · Active Directory</span>
+      </div>
+      <div class="fs-card fs-fsx-l">
+        <h3>FSx for Lustre</h3>
+        <p>Sistema de archivos distribuido en paralelo para <strong>HPC y ML</strong>. Latencia sub-milisegundo. Integra con S3. Para Linux. Nombre = Linux + clúster.</p>
+        <span class="kw badge purple">HPC · ML · Lustre · Linux · alto rendimiento</span>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- STORAGE GATEWAY -->
+  <section>
+    <div class="section-label">05 · Integración on-premises</div>
+    <h2>AWS Storage Gateway — 3 tipos</h2>
+
+    <div class="gw-grid">
+      <div class="gw-card gw-file">
+        <h3>File Gateway</h3>
+        <p>Expone archivos SMB/NFS on-premises. Los datos se almacenan en <strong>S3</strong>. Caché local para datos recientes. Compatible con Windows.</p>
+      </div>
+      <div class="gw-card gw-volume">
+        <h3>Volume Gateway</h3>
+        <p>Expone volúmenes iSCSI. Dos modos:<br>· <strong>Stored</strong>: datos en local, snapshots en S3.<br>· <strong>Cached</strong>: datos primarios en AWS, caché local frecuente.</p>
+      </div>
+      <div class="gw-card gw-tape">
+        <h3>Tape Gateway (VTL)</h3>
+        <p>Biblioteca de cintas virtuales vía iSCSI. Almacenado en S3/Glacier. Para software de backup que usa cintas físicas.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- BACKUP -->
+  <section>
+    <div class="section-label">06 · Backup centralizado</div>
+    <h2>AWS Backup</h2>
+    <div class="def" style="border-left-color: var(--teal);">
+      <div class="def-title" style="color: var(--teal);">AWS Backup</div>
+      Servicio completamente administrado para <strong>centralizar y automatizar</strong> la protección de datos en todos los servicios AWS y on-premises. Configura políticas de backup, cumplimiento y supervisión desde un solo lugar. Elimina scripts personalizados y procesos manuales.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>S3 = objetos</strong>. EFS/FSx = archivos (compartidos). EBS = bloques (dedicado por instancia).</li>
+      <li><strong>S3 Glacier Deep Archive</strong> = menor coste de S3, recuperación hasta 12h. Mejor para retención legal a largo plazo.</li>
+      <li><strong>Versionado S3</strong>: actívalo para proteger contra sobrescrituras y borrados accidentales.</li>
+      <li><strong>EBS solo conecta a instancias de la misma AZ.</strong></li>
+      <li>Solo <strong>SSD (gp3, io2)</strong> pueden ser volúmenes de arranque. Los HDD (st1, sc1) no.</li>
+      <li><strong>EFS = Linux</strong>. FSx for Windows = Windows/SMB/AD. FSx for Lustre = HPC/ML/Linux.</li>
+      <li><strong>Instance Store = efímero</strong>. EBS = persistente.</li>
+      <li><strong>Storage Gateway</strong>: File (S3 + caché) · Volume (iSCSI) · Tape (VTL). Todos son on-premises → AWS.</li>
+      <li><strong>AWS Backup</strong> = centraliza y automatiza backups de todos los servicios AWS desde un único lugar.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

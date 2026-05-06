@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 7</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* ML LEVELS */
+  .levels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .level-row {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .level-label { font-family: var(--mono); font-size: 11px; font-weight: 600; }
+  .level-desc  { font-size: 12px; color: var(--muted); font-weight: 300; }
+  .level-svcs  { font-size: 11px; color: #cdd9e5; margin-top: 4px; font-style: italic; }
+  .l1 { background: var(--blue-dim);   border-color: rgba(88,166,255,0.2); }  .l1 .level-label { color: var(--blue); }
+  .l2 { background: var(--green-dim);  border-color: rgba(63,185,80,0.2);  }  .l2 .level-label { color: var(--green); }
+  .l3 { background: var(--purple-dim); border-color: rgba(188,140,255,0.2); } .l3 .level-label { color: var(--purple); }
+
+  /* AI SERVICES GRID */
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ai-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .ai-header { padding: 9px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .ai-icon { font-size: 15px; flex-shrink: 0; }
+  .ai-name { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .ai-body { padding: 9px 14px; }
+  .ai-body .what { font-size: 12px; color: #cdd9e5; font-weight: 300; margin-bottom: 4px; }
+  .ai-body .kw   { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 3px; }
+
+  .s-translate .ai-header { background: var(--blue-dim);   border-bottom-color: rgba(88,166,255,0.2); }
+  .s-translate .ai-name   { color: var(--blue); }
+  .s-translate .kw        { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+  .s-polly     .ai-header { background: var(--green-dim);  border-bottom-color: rgba(63,185,80,0.2); }
+  .s-polly     .ai-name   { color: var(--green); }
+  .s-polly     .kw        { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .s-lex       .ai-header { background: var(--yellow-dim); border-bottom-color: rgba(210,153,34,0.2); }
+  .s-lex       .ai-name   { color: var(--yellow); }
+  .s-lex       .kw        { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .s-rekognition .ai-header { background: var(--purple-dim); border-bottom-color: rgba(188,140,255,0.2); }
+  .s-rekognition .ai-name   { color: var(--purple); }
+  .s-rekognition .kw        { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .s-sagemaker .ai-header { background: var(--orange-dim); border-bottom-color: rgba(249,115,22,0.2); }
+  .s-sagemaker .ai-name   { color: var(--orange); }
+  .s-sagemaker .kw        { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+  .s-codewhis  .ai-header { background: var(--teal-dim);   border-bottom-color: rgba(57,208,216,0.2); }
+  .s-codewhis  .ai-name   { color: var(--teal); }
+  .s-codewhis  .kw        { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(57,208,216,0.3); }
+
+  /* ANALYTICS TABLE */
+  .analytics-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .analytics-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .analytics-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .analytics-table tr:nth-child(even) td { background: var(--surface); }
+  .analytics-table tr:nth-child(odd)  td { background: var(--bg); }
+  .svc-n { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .ai-grid { grid-template-columns: 1fr; }
+    .level-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 7</h1>
+    <div class="subtitle">IA · Machine Learning · Análisis de datos · Athena · Kinesis · Redshift · EMR · QuickSight</div>
+  </header>
+
+  <!-- 3 NIVELES ML -->
+  <section>
+    <div class="section-label">01 · Tres niveles de servicios ML en AWS</div>
+    <h2>IA · ML · Frameworks — De lo fácil a lo profundo</h2>
+
+    <div class="levels">
+      <div class="level-row l1">
+        <div>
+          <div class="level-label">Nivel 1 — Servicios de IA</div>
+          <span class="badge blue" style="margin-top:5px;">Sin conocimientos de ML</span>
+        </div>
+        <div>
+          <div class="level-desc">Servicios completamente administrados accesibles vía API. Modelos pre-entrenados. No requieren conocimientos de ML.</div>
+          <div class="level-svcs">Translate · Polly · Lex · Rekognition · Comprehend · Textract · Macie</div>
+        </div>
+      </div>
+      <div class="level-row l2">
+        <div>
+          <div class="level-label">Nivel 2 — Servicios de ML</div>
+          <span class="badge green" style="margin-top:5px;">Para científicos de datos</span>
+        </div>
+        <div>
+          <div class="level-desc">Servicios administrados para crear, entrenar y desplegar modelos propios. Requieren conocimientos de ML.</div>
+          <div class="level-svcs">Amazon SageMaker · Amazon CodeWhisperer</div>
+        </div>
+      </div>
+      <div class="level-row l3">
+        <div>
+          <div class="level-label">Nivel 3 — Frameworks e infraestructura</div>
+          <span class="badge purple" style="margin-top:5px;">Para expertos en ML</span>
+        </div>
+        <div>
+          <div class="level-desc">Marcos open-source sobre infraestructura optimizada. Control total del entorno ML.</div>
+          <div class="level-svcs">TensorFlow · PyTorch · Apache MXNet · Deep Learning AMIs · Instancias P3/P3dn EC2</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SERVICIOS DE IA -->
+  <section>
+    <div class="section-label">02 · Servicios de IA — Nivel 1</div>
+    <h2>Servicios pre-entrenados accesibles vía API</h2>
+
+    <div class="ai-grid">
+      <div class="ai-card s-translate">
+        <div class="ai-header"><span class="ai-icon">🌐</span><span class="ai-name">Amazon Translate</span></div>
+        <div class="ai-body">
+          <div class="what">Traducción y localización de texto entre idiomas.</div>
+          <span class="kw">traducción · localización · texto</span>
+        </div>
+      </div>
+
+      <div class="ai-card s-polly">
+        <div class="ai-header"><span class="ai-icon">🔊</span><span class="ai-name">Amazon Polly</span></div>
+        <div class="ai-body">
+          <div class="what">Convierte texto en voz natural (Text-to-Speech).</div>
+          <span class="kw">texto a voz · TTS · síntesis de voz</span>
+        </div>
+      </div>
+
+      <div class="ai-card s-lex">
+        <div class="ai-header"><span class="ai-icon">💬</span><span class="ai-name">Amazon Lex</span></div>
+        <div class="ai-body">
+          <div class="what">Crea chatbots conversacionales con comprensión de lenguaje natural (NLU) y reconocimiento de voz.</div>
+          <span class="kw">chatbot · NLU · conversacional · voz</span>
+        </div>
+      </div>
+
+      <div class="ai-card s-rekognition">
+        <div class="ai-header"><span class="ai-icon">👁️</span><span class="ai-name">Amazon Rekognition</span></div>
+        <div class="ai-body">
+          <div class="what">Análisis de imágenes y vídeo. Detecta objetos, personas, texto, rostros, actividades y contenido inapropiado.</div>
+          <span class="kw">visión artificial · imágenes · vídeo · análisis visual</span>
+        </div>
+      </div>
+
+      <div class="ai-card s-sagemaker">
+        <div class="ai-header"><span class="ai-icon">🧪</span><span class="ai-name">Amazon SageMaker</span></div>
+        <div class="ai-body">
+          <div class="what">Plataforma completa para crear, entrenar y desplegar modelos de ML a escala. Nivel 2 (requiere conocimientos de ML).</div>
+          <span class="kw">entrenar modelos · desplegar · científicos de datos</span>
+        </div>
+      </div>
+
+      <div class="ai-card s-codewhis">
+        <div class="ai-header"><span class="ai-icon">⌨️</span><span class="ai-name">Amazon CodeWhisperer</span></div>
+        <div class="ai-body">
+          <div class="what">Generador de código basado en ML. Sugerencias en tiempo real y análisis de seguridad del código.</div>
+          <span class="kw">generación de código · seguridad · ML</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ANALYTICS -->
+  <section>
+    <div class="section-label">03 · Servicios de análisis</div>
+    <h2>Athena · Macie · Kinesis · Glue · QuickSight · EMR · Redshift</h2>
+
+    <table class="analytics-table">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Qué hace</th>
+          <th>Serverless</th>
+          <th>Keyword / Caso de uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="svc-n" style="color:var(--blue)">Amazon Athena</span></td>
+          <td>Consulta SQL interactiva sobre datos en S3. Sin ETL previo. Paga por consulta/TB escaneado.</td>
+          <td><span class="badge green">Sí</span></td>
+          <td>"consultar S3 con SQL" · logs · reportes de costes · sin aprovisionar</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--purple)">Amazon Macie</span></td>
+          <td>Detecta, clasifica y protege datos sensibles (PII) en S3 usando ML. Alertas y dashboards.</td>
+          <td><span class="badge green">Sí</span></td>
+          <td><strong>"PII"</strong> · información sensible · protección de datos en S3</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--orange)">Amazon Kinesis</span></td>
+          <td>Ingesta y procesamiento de datos en streaming a cualquier escala: vídeo, audio, logs, IoT, clickstreams.</td>
+          <td><span class="badge green">Sí</span></td>
+          <td><strong>"tiempo real"</strong> · streaming · IoT · millones de eventos/s</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--yellow)">AWS Glue</span></td>
+          <td>Servicio ETL sin servidor. Descubre, prepara, mueve e integra datos de múltiples fuentes para análisis y ML.</td>
+          <td><span class="badge green">Sí</span></td>
+          <td>"ETL" · catálogo de datos · preparación de datos · data lake</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--teal)">Amazon QuickSight</span></td>
+          <td>Servicio de BI completamente administrado. Dashboards e informes interactivos con insights de ML para toda la organización.</td>
+          <td><span class="badge green">Sí</span></td>
+          <td>"BI" · dashboards · visualización · informes empresariales</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--red)">Amazon EMR</span></td>
+          <td>Plataforma big data para procesar grandes cantidades de datos. Usa Hadoop, Spark sobre EC2 y S3.</td>
+          <td><span class="badge red">No</span></td>
+          <td><strong>"Apache Spark/Hadoop"</strong> · big data · transformaciones · ML a escala</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n" style="color:var(--green)">Amazon Redshift</span></td>
+          <td>Data warehouse columnar a escala de petabytes. Para OLAP. Redshift Spectrum consulta S3 sin cargar datos.</td>
+          <td><span class="badge red">No (clúster)</span></td>
+          <td>"OLAP" · "data warehouse" · "petabytes" · analítico</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--blue);">
+      <div class="def-title" style="color: var(--blue);">Athena vs Redshift Spectrum vs Redshift</div>
+      <strong>Athena</strong>: serverless, SQL directo sobre S3, sin clúster, paga por consulta. Para consultas ad-hoc rápidas.<br>
+      <strong>Redshift Spectrum</strong>: necesita un clúster de Redshift pero consulta S3 sin cargar datos. Más potente que Athena para cargas analíticas pesadas.<br>
+      <strong>Redshift</strong>: clúster completo, datos cargados dentro, máximo rendimiento analítico OLAP.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>Rekognition</strong> = visión artificial (imágenes/vídeo). No confundir con SageMaker (que entrena modelos).</li>
+      <li><strong>Macie</strong> = detección de PII en S3 con ML. Regla mnemotécnica: Macie tiene una I, PII también.</li>
+      <li><strong>Kinesis</strong> = datos en streaming en <strong>tiempo real</strong>. Palabra clave imprescindible.</li>
+      <li><strong>Athena</strong> = SQL serverless sobre S3. Sin ETL, sin clúster. Paga por TB escaneado.</li>
+      <li><strong>EMR</strong> = Apache Hadoop/Spark sobre EC2. Para big data y transformaciones masivas. No serverless.</li>
+      <li><strong>QuickSight</strong> = BI y dashboards. No es una BD ni un motor de análisis.</li>
+      <li><strong>AWS Glue</strong> = ETL serverless. Preparación e integración de datos para Athena, Redshift o EMR.</li>
+      <li>Nivel IA (Rekognition, Polly…) = sin conocimientos ML. Nivel ML (SageMaker) = para científicos de datos.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

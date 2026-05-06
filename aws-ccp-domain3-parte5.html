@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* VPC DIAGRAM */
+  .vpc-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .vpc-diagram-title { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .vpc-outer { border: 1px dashed rgba(88,166,255,0.35); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  .vpc-outer-label { font-family: var(--mono); font-size: 10px; color: var(--blue); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .vpc-subnets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .subnet { border-radius: 5px; padding: 8px 10px; }
+  .subnet-pub { background: rgba(63,185,80,0.06); border: 1px dashed rgba(63,185,80,0.3); }
+  .subnet-priv { background: rgba(188,140,255,0.06); border: 1px dashed rgba(188,140,255,0.3); }
+  .subnet-label { font-family: var(--mono); font-size: 10px; margin-bottom: 4px; }
+  .subnet-pub .subnet-label { color: var(--green); }
+  .subnet-priv .subnet-label { color: var(--purple); }
+  .subnet-content { font-size: 11px; color: var(--muted); }
+  .igw-bar {
+    background: var(--blue-dim);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--blue);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  /* VPC COMPONENTS TABLE */
+  .vpc-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .vpc-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .vpc-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .vpc-table tr:nth-child(even) td { background: var(--surface); }
+  .vpc-table tr:nth-child(odd)  td { background: var(--bg); }
+  .comp-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* CONNECTIVITY TABLE */
+  .conn-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .conn-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .conn-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .conn-table tr:nth-child(even) td { background: var(--surface); }
+  .conn-table tr:nth-child(odd)  td { background: var(--bg); }
+  .conn-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* ENDPOINT GRID */
+  .endpoint-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 13px 14px; }
+  .ep-card h3 { font-size: 12px; font-weight: 600; font-family: var(--mono); margin-bottom: 6px; }
+  .ep-card p { font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 300; }
+  .ep-card .svcs { font-family: var(--mono); font-size: 10px; }
+  .ep-gw   { border-top: 2px solid var(--blue);  } .ep-gw h3   { color: var(--blue); } .ep-gw .svcs   { color: var(--blue); }
+  .ep-iface { border-top: 2px solid var(--teal); } .ep-iface h3 { color: var(--teal); } .ep-iface .svcs { color: var(--teal); }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .vpc-subnets, .endpoint-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 5</h1>
+    <div class="subtitle">Amazon VPC · Subredes · NACL · SG · NAT · VPC Endpoints · VPN · Direct Connect · Route 53</div>
+  </header>
+
+  <!-- VPC OVERVIEW -->
+  <section>
+    <div class="section-label">01 · Amazon VPC</div>
+    <h2>Tu datacenter virtual privado en AWS</h2>
+
+    <div class="def">
+      <div class="def-title">Amazon Virtual Private Cloud</div>
+      Red privada virtual aislada lógicamente dentro de AWS. Servicio <strong>regional</strong>, resistente por defecto (opera en múltiples AZ). Control total sobre: rangos CIDR, subredes, tablas de enrutamiento y gateways.
+    </div>
+
+    <div class="vpc-diagram">
+      <div class="vpc-diagram-title">Anatomía de una VPC</div>
+      <div class="igw-bar">Internet Gateway (IGW) — punto de entrada/salida a internet público</div>
+      <div class="vpc-outer">
+        <div class="vpc-outer-label">Amazon VPC <span class="badge blue">regional</span> — CIDR: 10.0.0.0/16 (ejemplo)</div>
+        <div class="vpc-subnets">
+          <div class="subnet subnet-pub">
+            <div class="subnet-label">Subred pública (AZ-a)</div>
+            <div class="subnet-content">Tiene ruta hacia IGW → acceso a internet<br>Security Group + NACL activos</div>
+          </div>
+          <div class="subnet subnet-priv">
+            <div class="subnet-label">Subred privada (AZ-b)</div>
+            <div class="subnet-content">Sin ruta directa a internet<br>Acceso saliente opcional vía NAT Gateway</div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-top:8px; margin-bottom:0;">El router de VPC (gestionado por AWS, dirección Red+1) enruta tráfico entre subredes. Las tablas de enrutamiento controlan a qué tiene acceso cada subred.</p>
+    </div>
+
+    <div class="def" style="border-left-color: var(--yellow);">
+      <div class="def-title" style="color: var(--yellow);">VPC por defecto vs VPC personalizada</div>
+      <strong>VPC por defecto</strong>: creada automáticamente por AWS en cada región. Una por región. Ya tiene IGW, subredes en cada AZ y rutas configuradas. Lista para usar.<br>
+      <strong>VPC personalizada</strong>: configurada enteramente por el cliente. Privada e aislada por defecto. Toda la configuración es responsabilidad del cliente.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- COMPONENTES VPC -->
+  <section>
+    <div class="section-label">02 · Componentes de red en VPC</div>
+    <h2>Router · Tablas de enrutamiento · IGW · NAT · NACL · SG</h2>
+
+    <table class="vpc-table">
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Nivel</th>
+          <th>Función</th>
+          <th>Estado (stateful)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="comp-name">Router VPC</span></td>
+          <td><span class="badge blue">VPC</span></td>
+          <td>Enruta tráfico entre subredes. Alta disponibilidad. Gestionado por AWS. Dirección Red+1.</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><span class="comp-name">Tabla de enrutamiento</span></td>
+          <td><span class="badge blue">Subred</span></td>
+          <td>Define a dónde puede ir el tráfico desde la subred. Una subred → una tabla de enrutamiento. Una tabla → múltiples subredes.</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><span class="comp-name">Internet Gateway (IGW)</span></td>
+          <td><span class="badge blue">VPC</span></td>
+          <td>Conecta la VPC con internet y la zona pública de AWS. Una por VPC. Resistente y escalable. Hace NAT estático (IP privada ↔ IP pública).</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><span class="comp-name">NAT Gateway</span></td>
+          <td><span class="badge green">Subred pública</span></td>
+          <td>Permite a instancias privadas iniciar tráfico saliente a internet. No permite tráfico entrante iniciado desde fuera. Gestionado por AWS.</td>
+          <td>N/A</td>
+        </tr>
+        <tr>
+          <td><span class="comp-name">NACL</span></td>
+          <td><span class="badge yellow">Subred</span></td>
+          <td>Firewall a nivel de subred. Filtra tráfico que cruza el límite de subred. Puede hacer Deny explícito.</td>
+          <td><span class="badge red">Stateless</span></td>
+        </tr>
+        <tr>
+          <td><span class="comp-name">Security Group</span></td>
+          <td><span class="badge purple">ENI del recurso</span></td>
+          <td>Firewall a nivel de recurso (EC2, RDS…). Solo reglas Allow. Deny implícito. Puede referenciar otros SGs.</td>
+          <td><span class="badge green">Stateful</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- VPC ENDPOINTS -->
+  <section>
+    <div class="section-label">03 · Conectividad a servicios AWS sin internet</div>
+    <h2>VPC Endpoints — Gateway vs Interface</h2>
+
+    <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Permiten que instancias en subredes privadas se conecten a servicios públicos de AWS <strong>sin salir a internet</strong>, sin IGW ni NAT Gateway.</p>
+
+    <div class="endpoint-grid">
+      <div class="ep-card ep-gw">
+        <h3>Gateway Endpoint</h3>
+        <p>Se añade como ruta en la tabla de enrutamiento. Usa enrutamiento con lista de prefijos.</p>
+        <div class="svcs">Servicios: S3 · DynamoDB</div>
+      </div>
+      <div class="ep-card ep-iface">
+        <h3>Interface Endpoint</h3>
+        <p>Crea una ENI con IP privada en la subred. Usa DNS para redirigir el tráfico. Para todos los demás servicios AWS.</p>
+        <div class="svcs">Servicios: todos salvo S3/DynamoDB (también para PrivateLink)</div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--teal);">
+      <div class="def-title" style="color: var(--teal);">AWS PrivateLink</div>
+      Servicio de punto de enlace de VPC que permite exponer una aplicación a otras VPCs y cuentas AWS <strong>sin interconexión de VPC</strong> ni puertas de enlace adicionales. Más seguro y escalable para arquitecturas multi-cuenta.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- CONECTIVIDAD EXTERNA -->
+  <section>
+    <div class="section-label">04 · Conectividad con entornos externos</div>
+    <h2>VPC Peering · VPN · Direct Connect</h2>
+
+    <table class="conn-table">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Qué conecta</th>
+          <th>Tránsito</th>
+          <th>Característica clave</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="conn-name" style="color:var(--blue)">VPC Peering</span></td>
+          <td>VPC ↔ VPC (misma o diferente cuenta/región)</td>
+          <td>Red privada AWS</td>
+          <td>Comunicación directa por IPs privadas. Tráfico cifrado por la red global de AWS.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name" style="color:var(--yellow)">AWS VPN</span></td>
+          <td>On-premises ↔ VPC</td>
+          <td>Internet pública (cifrada)</td>
+          <td>Túnel cifrado sobre internet. Rápido de configurar. Latencia variable.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name" style="color:var(--purple)">AWS Direct Connect</span></td>
+          <td>On-premises ↔ AWS</td>
+          <td>Fibra física <strong>dedicada</strong></td>
+          <td>No usa internet. Latencia consistente y predecible. Mayor ancho de banda. Keyword: <strong>"dedicado"</strong>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--yellow);">
+      <div class="def-title" style="color: var(--yellow);">VPN vs Direct Connect</div>
+      <strong>VPN</strong>: sobre internet pública, cifrado, económico, rápido de desplegar, latencia variable.<br>
+      <strong>Direct Connect</strong>: fibra física privada, no pasa por internet, latencia baja y consistente, requiere tiempo de provisión (semanas/meses). Palabra clave: <strong>dedicado · privado · consistente</strong>.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ROUTE 53 -->
+  <section>
+    <div class="section-label">05 · DNS administrado</div>
+    <h2>Amazon Route 53</h2>
+
+    <div class="def" style="border-left-color: var(--green);">
+      <div class="def-title" style="color: var(--green);">Amazon Route 53</div>
+      Servicio DNS administrado de AWS. <strong>Resistencia global</strong> (base de datos única replicada entre regiones). Dos funciones principales:<br><br>
+      1. <strong>Registro de dominios</strong> — comprar y gestionar nombres de dominio.<br>
+      2. <strong>Hosting de zonas DNS</strong> — traducir nombres de dominio a IPs y viceversa.<br><br>
+      <strong>Políticas de enrutamiento</strong> para alta disponibilidad:<br>
+      · <strong>Failover</strong>: redirige a un recurso secundario si el primario falla.<br>
+      · <strong>Ponderada</strong>: distribuye tráfico entre recursos según pesos (A/B testing, migrations).<br>
+      · <strong>Basada en latencia</strong>: dirige al recurso con menor latencia para el usuario.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>VPC = servicio regional</strong>, opera en múltiples AZ. Una VPC por defecto por región.</li>
+      <li>Añadir ruta hacia IGW en la tabla de enrutamiento de una subred → esa subred pasa a ser <strong>pública</strong>.</li>
+      <li><strong>NAT Gateway</strong> en subred pública permite que instancias privadas accedan a internet (solo salida).</li>
+      <li><strong>NACL = stateless</strong> (reglas entrada Y salida explícitas). <strong>SG = stateful</strong> (entrada cubre salida automáticamente).</li>
+      <li>Solo NACL puede hacer <strong>Deny explícito</strong>. Los SGs no.</li>
+      <li><strong>Gateway Endpoint</strong> → S3 y DynamoDB. <strong>Interface Endpoint</strong> → resto de servicios AWS.</li>
+      <li><strong>Direct Connect</strong> = conexión física <strong>dedicada</strong>. No usa internet. Latencia consistente.</li>
+      <li><strong>VPN</strong> = cifrado sobre internet pública. Más económico, más rápido de desplegar.</li>
+      <li><strong>Route 53</strong> = DNS global con resistencia global. Políticas: failover, ponderada, latencia.</li>
+      <li>VPC Peering: dos VPCs se comunican por IPs privadas. Puede ser cross-account y cross-region.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

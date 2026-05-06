@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 4 · Parte 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--border:#30363d;
+    --orange:#f97316;--orange-dim:rgba(249,115,22,0.12);
+    --blue:#58a6ff;--blue-dim:rgba(88,166,255,0.10);
+    --green:#3fb950;--green-dim:rgba(63,185,80,0.10);
+    --yellow:#d29922;--yellow-dim:rgba(210,153,34,0.12);
+    --red:#f85149;--red-dim:rgba(248,81,73,0.10);
+    --purple:#bc8cff;--purple-dim:rgba(188,140,255,0.10);
+    --teal:#39d0d8;--teal-dim:rgba(57,208,216,0.10);
+    --text:#e6edf3;--muted:#8b949e;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.65;padding:40px 24px 80px;}
+  .page{max-width:860px;margin:0 auto;}
+  header{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:36px;}
+  .breadcrumb{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+  h1{font-size:26px;font-weight:600;color:var(--orange);letter-spacing:-.02em;}
+  .subtitle{color:var(--muted);font-size:13px;font-weight:300;margin-top:4px;}
+  section{margin-bottom:32px;}
+  .section-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  h2{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--text);}
+  p{color:#cdd9e5;margin-bottom:8px;font-weight:300;}
+  hr{border:none;border-top:1px solid var(--border);margin:28px 0;}
+  .def{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:4px;padding:14px 16px;margin-bottom:16px;}
+  .def-title{font-family:var(--mono);font-size:11px;color:var(--orange);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;}
+  .badge.blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(88,166,255,.3);}
+  .badge.green{background:var(--green-dim);color:var(--green);border:1px solid rgba(63,185,80,.3);}
+  .badge.yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(210,153,34,.3);}
+  .badge.red{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,81,73,.3);}
+  .badge.teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(57,208,216,.3);}
+  .badge.orange{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(249,115,22,.3);}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;}
+  th{background:var(--surface2);border:1px solid var(--border);padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400;letter-spacing:.05em;text-align:left;}
+  td{border:1px solid var(--border);padding:9px 12px;vertical-align:top;font-weight:300;color:#cdd9e5;}
+  tr:nth-child(even) td{background:var(--surface);}
+  tr:nth-child(odd) td{background:var(--bg);}
+  .svc-n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);}
+
+  .tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  .tool-card{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+  .tool-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .tool-icon{font-size:16px;flex-shrink:0;}
+  .tool-name{font-family:var(--mono);font-size:12px;font-weight:600;}
+  .tool-body{padding:10px 14px;}
+  .tool-body .what{font-size:12px;color:#cdd9e5;font-weight:300;margin-bottom:5px;}
+  .tool-body .when{font-size:11px;color:var(--muted);font-style:italic;font-weight:300;}
+  .t-explorer .tool-header{background:var(--blue-dim);border-bottom-color:rgba(88,166,255,.2);} .t-explorer .tool-name{color:var(--blue);}
+  .t-budgets  .tool-header{background:var(--green-dim);border-bottom-color:rgba(63,185,80,.2);} .t-budgets  .tool-name{color:var(--green);}
+  .t-cur      .tool-header{background:var(--yellow-dim);border-bottom-color:rgba(210,153,34,.2);} .t-cur    .tool-name{color:var(--yellow);}
+  .t-trusted  .tool-header{background:var(--purple-dim);border-bottom-color:rgba(188,140,255,.2);} .t-trusted .tool-name{color:var(--purple);}
+  .t-calc     .tool-header{background:var(--teal-dim);border-bottom-color:rgba(57,208,216,.2);} .t-calc   .tool-name{color:var(--teal);}
+  .t-billing  .tool-header{background:var(--orange-dim);border-bottom-color:rgba(249,115,22,.2);} .t-billing .tool-name{color:var(--orange);}
+
+  .exam-tip{background:var(--orange-dim);border:1px solid rgba(249,115,22,.3);border-radius:6px;padding:14px 16px;margin-top:20px;}
+  .exam-tip-header{font-family:var(--mono);font-size:10px;color:var(--orange);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+  .exam-tip ul{list-style:none;padding:0;}
+  .exam-tip li{font-size:13px;color:#cdd9e5;padding:5px 0;border-bottom:1px solid rgba(249,115,22,.15);font-weight:300;}
+  .exam-tip li:last-child{border:none;}
+  .exam-tip li::before{content:'→ ';color:var(--orange);font-family:var(--mono);}
+  .exam-tip strong{color:var(--orange);font-weight:600;}
+
+  @media print{*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}body{margin:0;}}
+  @page{margin:10mm;size:auto;}
+  @media(max-width:600px){.tools-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 4 — Parte 2</h1>
+    <div class="subtitle">Herramientas de facturación · Presupuestos · Organizations · S3 Lifecycle · Calculadora AWS</div>
+  </header>
+
+  <!-- HERRAMIENTAS DE COSTES -->
+  <section>
+    <div class="section-label">01 · Herramientas de administración de costes</div>
+    <h2>Cost Explorer · Budgets · CUR · Trusted Advisor · Calculadora</h2>
+
+    <div class="tools-grid">
+      <div class="tool-card t-explorer">
+        <div class="tool-header"><span class="tool-icon">📈</span><span class="tool-name">AWS Cost Explorer</span></div>
+        <div class="tool-body">
+          <div class="what">Visualiza y analiza tendencias de gasto histórico. Proyecta costes futuros. Filtra por servicio, región, etiqueta, cuenta…</div>
+          <div class="when">Para informes financieros interactivos y análisis a alto nivel. Permite hacer drill-down en el detalle.</div>
+        </div>
+      </div>
+      <div class="tool-card t-budgets">
+        <div class="tool-header"><span class="tool-icon">🔔</span><span class="tool-name">AWS Budgets</span></div>
+        <div class="tool-body">
+          <div class="what">Define presupuestos de coste, uso o reservas. Envía alertas (SNS, email) cuando el gasto real o proyectado supera el umbral.</div>
+          <div class="when">Para control proactivo del gasto. Alarmas de nivel gratuito y alertas automáticas por umbrales.</div>
+        </div>
+      </div>
+      <div class="tool-card t-cur">
+        <div class="tool-header"><span class="tool-icon">📋</span><span class="tool-name">Cost and Usage Report (CUR)</span></div>
+        <div class="tool-body">
+          <div class="what">El informe más detallado disponible. Desglosa costes por hora, día, mes, producto, recurso, etiqueta. Se entrega en S3.</div>
+          <div class="when">Para análisis profundo con Athena, Redshift o QuickSight. Integración con herramientas de BI.</div>
+        </div>
+      </div>
+      <div class="tool-card t-trusted">
+        <div class="tool-header"><span class="tool-icon">💡</span><span class="tool-name">AWS Trusted Advisor</span></div>
+        <div class="tool-body">
+          <div class="what">Analiza la cuenta y hace recomendaciones automáticas en 5 categorías, incluyendo optimización de costes.</div>
+          <div class="when">Identifica instancias sobredimensionadas, volúmenes EBS infrautilizados, IPs elásticas sin usar, etc.</div>
+        </div>
+      </div>
+      <div class="tool-card t-calc">
+        <div class="tool-header"><span class="tool-icon">🧮</span><span class="tool-name">Calculadora de precios AWS</span></div>
+        <div class="tool-body">
+          <div class="what">Estima el coste mensual de servicios AWS para un caso concreto antes de desplegarlo.</div>
+          <div class="when">Para planificación previa a la migración o evaluación de nuevas arquitecturas.</div>
+        </div>
+      </div>
+      <div class="tool-card t-billing">
+        <div class="tool-header"><span class="tool-icon">🧾</span><span class="tool-name">AWS Billing Conductor</span></div>
+        <div class="tool-body">
+          <div class="what">Servicio de facturación personalizado para partners y clientes empresariales. Soporta análisis de costes y reintegro (chargeback).</div>
+          <div class="when">Para MSPs o empresas que necesitan redistribuir costes entre departamentos con precios personalizados.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color:var(--blue);">
+      <div class="def-title" style="color:var(--blue);">Cost Explorer vs CUR — Cuándo usar cada uno</div>
+      <strong>Cost Explorer</strong>: interfaz visual, informes interactivos a alto nivel, drill-down por dimensiones. Respuesta rápida.<br>
+      <strong>CUR</strong>: máximo detalle granular (hasta por hora y por recurso). Para integraciones con Athena, Redshift o QuickSight.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ORGANIZATIONS Y FACTURACIÓN UNIFICADA -->
+  <section>
+    <div class="section-label">02 · Gestión centralizada</div>
+    <h2>AWS Organizations · Control Tower · Facturación unificada</h2>
+
+    <div class="def" style="border-left-color:var(--green);">
+      <div class="def-title" style="color:var(--green);">Beneficios de la facturación unificada (Consolidated Billing)</div>
+      AWS Organizations trata todas las cuentas de la organización como una sola a efectos de facturación. Beneficios:<br><br>
+      · <strong>Descuentos por volumen compartidos</strong>: el uso agregado de todas las cuentas alcanza los umbrales de precios escalonados antes (EC2, S3…).<br>
+      · <strong>Reservas compartidas</strong>: las Instancias Reservadas compradas por cualquier cuenta benefician a toda la organización.<br>
+      · <strong>Vista centralizada</strong>: una sola factura con el desglose por cuenta.<br>
+      · <strong>Control Tower</strong>: gobernanza multi-cuenta con guardarraíles de seguridad y conformidad preconfigurados.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ETIQUETAS DE COSTES -->
+  <section>
+    <div class="section-label">03 · Visibilidad de costes</div>
+    <h2>Etiquetas de asignación de costes</h2>
+
+    <div class="def" style="border-left-color:var(--yellow);">
+      <div class="def-title" style="color:var(--yellow);">Cost Allocation Tags</div>
+      Las etiquetas se aplican a recursos AWS (EC2, S3, RDS…) para atribuir costes a proyectos, equipos, entornos o clientes. Pasos:<br><br>
+      1. Crear etiquetas en los recursos (ej. <code>Project: Alpha</code>, <code>Team: Backend</code>).<br>
+      2. Activar las etiquetas como "etiquetas de asignación de costes" en la consola de Billing.<br>
+      3. Filtrar vistas en Cost Explorer o CUR por esas etiquetas.<br><br>
+      Son fundamentales para que los equipos sean conscientes y responsables de los costes que generan.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- OPTIMIZACIÓN S3 Y ALMACENAMIENTO -->
+  <section>
+    <div class="section-label">04 · Optimización de almacenamiento</div>
+    <h2>S3 Lifecycle · Intelligent-Tiering · EBS</h2>
+
+    <table>
+      <thead>
+        <tr><th>Función</th><th>Qué hace</th><th>Cuándo usarla</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="svc-n">S3 Lifecycle Policy</span></td>
+          <td>Mueve automáticamente objetos a una clase de almacenamiento más barata (o los elimina) tras un número de días configurado.</td>
+          <td>Cuando sabes el patrón de acceso: activo los primeros 30 días, luego archivado en Glacier.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">S3 Intelligent-Tiering</span></td>
+          <td>Mueve automáticamente cada objeto al nivel de acceso más rentable según cómo se accede a él. Sin necesidad de definir reglas.</td>
+          <td>Cuando el patrón de acceso es impredecible o variable. Pequeña comisión de supervisión por objeto.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">S3 Requester Pays</span></td>
+          <td>El solicitante (quien descarga) paga los costes de transferencia y solicitud, no el propietario del bucket.</td>
+          <td>Cuando compartes datos con terceros y no quieres asumir los costes de transferencia.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">Amazon Data Lifecycle Manager</span></td>
+          <td>Automatiza la creación, retención y eliminación de snapshots de EBS. Reduce costes de almacenamiento de snapshots obsoletos.</td>
+          <td>Para gestionar el ciclo de vida de snapshots EBS sin intervención manual.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">AWS Backup</span></td>
+          <td>Centraliza y automatiza backups de múltiples servicios. Elimina la necesidad de scripts personalizados.</td>
+          <td>Para cumplir requisitos de conformidad de backups en toda la organización desde un único lugar.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- TRANSFERENCIA DE DATOS Y MIGRACIÓN -->
+  <section>
+    <div class="section-label">05 · Migración de datos — Decisión de herramienta</div>
+    <h2>Snowball vs Direct Connect vs DataSync vs Transfer Family</h2>
+
+    <table>
+      <thead>
+        <tr><th>Herramienta</th><th>Volumen</th><th>Método</th><th>Cuándo elegirla</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="svc-n">AWS Snowball Edge</span></td>
+          <td>TB a PB</td>
+          <td>Dispositivo físico</td>
+          <td>Migración grande + segura + rápida. Red disponible insuficiente. Con capacidad de compute en el edge.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">AWS Snowmobile</span></td>
+          <td>PB a EB</td>
+          <td>Camión físico</td>
+          <td>Migraciones masivas de datacenter completo. Solo cuando el volumen es extremo.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">AWS Direct Connect</span></td>
+          <td>Variable</td>
+          <td>Fibra privada dedicada</td>
+          <td>Transferencia continua on-premises ↔ AWS. Baja latencia consistente. El coste de transferencia se incluye en el servicio.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">AWS DataSync</span></td>
+          <td>Cientos de TB</td>
+          <td>Online (internet o Direct Connect)</td>
+          <td>Transferencia automatizada de archivos. Hasta 10× más rápido que herramientas open source. Validación de datos incluida.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-n">AWS Transfer Family</span></td>
+          <td>Variable</td>
+          <td>SFTP, FTPS, FTP</td>
+          <td>Migración usando protocolos de transferencia de archivos estándar (SFTP/FTP) hacia/desde S3 o EFS.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color:var(--red);">
+      <div class="def-title" style="color:var(--red);">Regla práctica para preguntas de migración</div>
+      <strong>250 TB desde servidores internos a S3</strong>: la opción más rápida y rentable → <strong>varios Snowball Edge</strong>. Snowmobile es para PB-EB. Direct Connect tarda más en aprovisionarse. Subir por internet con 100 Mbps tomaría semanas.
+    </div>
+  </section>
+
+  <hr>
+
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>Cost Explorer</strong> = informes interactivos visuales. <strong>CUR</strong> = máximo detalle, para integraciones con Athena/Redshift.</li>
+      <li><strong>AWS Budgets</strong> = alertas proactivas cuando el gasto supera un umbral definido.</li>
+      <li><strong>Facturación unificada</strong> (Organizations) = descuentos por volumen compartidos entre todas las cuentas + una sola factura.</li>
+      <li><strong>Etiquetas de asignación de costes</strong> = fundamentales para atribuir costes a proyectos o equipos.</li>
+      <li><strong>S3 Lifecycle Policy</strong> = mover objetos automáticamente cuando sabes el patrón de acceso.<br><strong>S3 Intelligent-Tiering</strong> = mover automáticamente cuando el patrón es impredecible.</li>
+      <li><strong>S3 Requester Pays</strong> = el que descarga paga la transferencia, no el propietario del bucket.</li>
+      <li><strong>Data Lifecycle Manager</strong> = automatiza snapshots de EBS. <strong>AWS Backup</strong> = centraliza todos los backups.</li>
+      <li><strong>Snowball Edge</strong> para TB-PB. <strong>Snowmobile</strong> para PB-EB. <strong>DataSync</strong> para transferencia online automatizada.</li>
+      <li><strong>Calculadora de precios AWS</strong> = estimar costes antes de desplegar. No es una herramienta de facturación histórica.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
