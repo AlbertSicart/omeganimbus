@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmegaNimbus — Security Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #05070d;
+      --deep:    #0a0d17;
+      --surface: #0f1220;
+      --card:    #131724;
+      --border:  rgba(255,255,255,0.06);
+      --red:     #c0392b;
+      --red-hot: #e74c3c;
+      --white:   #f0f0f0;
+      --muted:   #6b7280;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(5,7,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2.5rem;
+    }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--white); }
+
+    /* ─── HERO ─── */
+    .page-hero {
+      padding: 8rem 3rem 4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title span { color: var(--red); }
+
+    .page-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.8;
+    }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item {
+      padding: 2rem 3rem;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+
+    .stat-value {
+      font-family: var(--display);
+      font-size: 2.5rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value.critical { color: #e74c3c; }
+    .stat-value.high     { color: #e67e22; }
+    .stat-value.medium   { color: #f1c40f; }
+    .stat-value.low      { color: #2ecc71; }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main-content {
+      padding: 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-family: var(--display);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    .refresh-btn {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .refresh-btn:hover { color: var(--white); border-color: var(--red); }
+
+    .last-updated {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ─── FINDINGS TABLE ─── */
+    .findings-container {
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .findings-table th {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .findings-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      vertical-align: top;
+    }
+
+    .findings-table tr:last-child td { border-bottom: none; }
+
+    .findings-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .severity-badge {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .sev-critical { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+    .sev-high     { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+    .sev-medium   { background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+    .sev-low      { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+
+    .finding-title {
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .finding-type {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .finding-date {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ─── LOADING / EMPTY STATES ─── */
+    .state-loading, .state-empty, .state-error {
+      padding: 4rem;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .state-loading::before {
+      content: '// ';
+      color: var(--red);
+    }
+
+    .state-error { color: var(--red-hot); }
+
+    /* ─── INFO CARDS ─── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    .info-card {
+      background: var(--card);
+      padding: 2rem;
+    }
+
+    .info-card-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-card-title {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--white); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">OMEGA<span>NIMBUS</span></a>
+    <ul>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#portfolio">Projects</a></li>
+      <li><a href="index.html#blog">Writeups</a></li>
+      <li><a href="security.html">SecOps</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <p class="page-eyebrow">// Security Operations Center</p>
+    <h1 class="page-title">THREAT<br><span>MONITOR</span></h1>
+    <p class="page-desc">
+      Real-time security findings from AWS GuardDuty monitoring the OmegaNimbus infrastructure.
+      Powered by Lambda + API Gateway. Automated alerts via EventBridge + SNS.
+    </p>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value critical" id="count-critical">—</div>
+      <div class="stat-label">Critical</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value high" id="count-high">—</div>
+      <div class="stat-label">High</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value medium" id="count-medium">—</div>
+      <div class="stat-label">Medium</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value low" id="count-low">—</div>
+      <div class="stat-label">Low / Info</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <div class="section-header">
+      <div>
+        <p class="section-label">// Active Findings</p>
+        <h2 class="section-title">GuardDuty Feed</h2>
+        <p class="last-updated" id="last-updated">Fetching data...</p>
+      </div>
+      <button class="refresh-btn" onclick="loadFindings()">↻ Refresh</button>
+    </div>
+
+    <div class="findings-container" id="findings-container">
+      <div class="state-loading">Connecting to GuardDuty API...</div>
+    </div>
+
+    <!-- INFO CARDS -->
+    <div class="info-grid">
+      <div class="info-card">
+        <p class="info-card-label">// Detection</p>
+        <h3 class="info-card-title">AWS GuardDuty</h3>
+        <p class="info-card-desc">Intelligent threat detection analyzing VPC Flow Logs, DNS logs, and CloudTrail events. Active since Day 3 of the OmegaNimbus build.</p>
+      </div>
+      <div class="info-card">
+        <p class="info-card-label">// Alerting</p>
+        <h3 class="info-card-title">EventBridge + SNS</h3>
+        <p class="info-card-desc">Automated alert pipeline triggers on findings with severity ≥ 4 (Medium, High, Critical). Email notification delivered in under 60 seconds.</p>
+      </div>
+      <div class="info-card">
+        <p class="info-card-label">// Audit</p>
+        <h3 class="info-card-title">CloudTrail</h3>
+        <p class="info-card-desc">Complete API audit log across all regions. KMS-encrypted at rest. Every action in this account is recorded and traceable.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>OMEGANIMBUS · <a href="index.html">omeganimbus.com</a></p>
+    <p>GuardDuty · EventBridge · SNS · Lambda · API Gateway</p>
+  </footer>
+
+  <script>
+    const API_ENDPOINT = 'https://judzwkiy9h.execute-api.eu-north-1.amazonaws.com/security';
+
+    function getSeverityClass(severity) {
+      if (severity >= 9) return 'critical';
+      if (severity >= 7) return 'high';
+      if (severity >= 4) return 'medium';
+      return 'low';
+    }
+
+    function getSeverityLabel(severity) {
+      if (severity >= 9) return 'Critical';
+      if (severity >= 7) return 'High';
+      if (severity >= 4) return 'Medium';
+      return 'Low';
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+    }
+
+    function updateStats(findings) {
+      const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+      findings.forEach(f => {
+        const s = f.severity;
+        if (s >= 9) counts.critical++;
+        else if (s >= 7) counts.high++;
+        else if (s >= 4) counts.medium++;
+        else counts.low++;
+      });
+      document.getElementById('count-critical').textContent = counts.critical;
+      document.getElementById('count-high').textContent = counts.high;
+      document.getElementById('count-medium').textContent = counts.medium;
+      document.getElementById('count-low').textContent = counts.low;
+    }
+
+    function renderFindings(findings) {
+      const container = document.getElementById('findings-container');
+
+      if (!findings || findings.length === 0) {
+        container.innerHTML = '<div class="state-empty">// No active findings detected</div>';
+        return;
+      }
+
+      const rows = findings.map(f => {
+        const sevClass = getSeverityClass(f.severity);
+        const sevLabel = getSeverityLabel(f.severity);
+        return `
+          <tr>
+            <td>
+              <span class="severity-badge sev-${sevClass}">${sevLabel} ${f.severity.toFixed(1)}</span>
+            </td>
+            <td>
+              <div class="finding-title">${f.title}</div>
+              <div class="finding-type">${f.type}</div>
+            </td>
+            <td>
+              <div class="finding-date">${formatDate(f.createdAt)}</div>
+            </td>
+            <td>
+              <span class="finding-type">${f.region}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <table class="findings-table">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Finding</th>
+              <th>Detected</th>
+              <th>Region</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadFindings() {
+      const container = document.getElementById('findings-container');
+      const lastUpdated = document.getElementById('last-updated');
+
+      container.innerHTML = '<div class="state-loading">Fetching findings from GuardDuty API...</div>';
+
+      try {
+        const res = await fetch(API_ENDPOINT);
+        const data = await res.json();
+        const findings = data.findings || [];
+
+        updateStats(findings);
+        renderFindings(findings);
+
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+        lastUpdated.textContent = `// Last updated: ${now} UTC · ${findings.length} findings`;
+
+      } catch (err) {
+        container.innerHTML = `<div class="state-error">// Error connecting to API: ${err.message}</div>`;
+        lastUpdated.textContent = '// Connection failed';
+      }
+    }
+
+    // Load on page init
+    loadFindings();
+  </script>
+
+</body>
+</html>
