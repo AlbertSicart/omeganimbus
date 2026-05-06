@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmegaNimbus — Study Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #05070d;
+      --deep:    #0a0d17;
+      --surface: #0f1220;
+      --card:    #131724;
+      --border:  rgba(255,255,255,0.06);
+      --red:     #c0392b;
+      --red-hot: #e74c3c;
+      --white:   #f0f0f0;
+      --muted:   #6b7280;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'Inter', sans-serif;
+      /* Notes palette */
+      --notes-bg: #0d1117;
+      --notes-surface: #161b22;
+      --notes-surface2: #1c2333;
+      --notes-border: #30363d;
+      --notes-orange: #f97316;
+      --notes-blue: #58a6ff;
+      --notes-green: #3fb950;
+      --notes-yellow: #d29922;
+      --notes-red: #f85149;
+      --notes-purple: #bc8cff;
+      --notes-teal: #39d0d8;
+      --notes-text: #e6edf3;
+      --notes-muted: #8b949e;
+      --notes-mono: 'IBM Plex Mono', monospace;
+      --notes-sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(5,7,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav ul a:hover, nav ul a.active { color: var(--white); }
+
+    /* ─── PAGE HERO ─── */
+    .page-hero {
+      padding: 8rem 3rem 4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+    .page-title {
+      font-family: var(--display);
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .page-title span { color: var(--red); }
+    .page-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.8;
+    }
+
+    /* ─── CERT SELECTOR ─── */
+    .cert-selector {
+      padding: 2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .cert-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-right: 0.5rem;
+    }
+    .cert-btn {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cert-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .cert-btn.active { color: var(--white); border-color: var(--red); background: rgba(192,57,43,0.1); }
+    .cert-badge {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      padding: 0.15rem 0.4rem;
+      background: rgba(46,204,113,0.1);
+      border: 1px solid rgba(46,204,113,0.3);
+      color: #2ecc71;
+      margin-left: 0.5rem;
+    }
+    .cert-badge.soon {
+      background: rgba(107,114,128,0.1);
+      border-color: rgba(107,114,128,0.3);
+      color: var(--muted);
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .notes-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 300px);
+    }
+
+    /* ─── SIDEBAR ─── */
+    .notes-sidebar {
+      border-right: 1px solid var(--border);
+      padding: 2rem 0;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    .domain-group { margin-bottom: 0.5rem; }
+
+    .domain-header {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .domain-header:hover { background: rgba(255,255,255,0.03); }
+    .domain-header.active { background: rgba(192,57,43,0.08); }
+
+    .domain-name {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .domain-header.active .domain-name { color: var(--red); }
+
+    .domain-arrow {
+      font-size: 0.6rem;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+    .domain-header.open .domain-arrow { transform: rotate(90deg); }
+
+    .parts-list {
+      display: none;
+      padding: 0.25rem 0;
+    }
+    .parts-list.open { display: block; }
+
+    .part-item {
+      padding: 0.5rem 1.5rem 0.5rem 2rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: var(--muted);
+      border-left: 2px solid transparent;
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+    .part-item:hover { color: var(--white); background: rgba(255,255,255,0.02); }
+    .part-item.active {
+      color: var(--white);
+      border-left-color: var(--red);
+      background: rgba(192,57,43,0.05);
+    }
+    .part-number {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--red);
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+
+    /* ─── CONTENT AREA ─── */
+    .notes-content {
+      padding: 2rem 3rem;
+      min-height: 600px;
+    }
+
+    .content-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .content-breadcrumb {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .content-breadcrumb span { color: var(--red); }
+    .content-title {
+      font-family: var(--display);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+    }
+    .content-subtitle {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      line-height: 1.6;
+    }
+
+    /* ─── LOADING STATE ─── */
+    .state-loading {
+      padding: 4rem;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+    .state-loading::before { content: '// '; color: var(--red); }
+
+    .state-welcome {
+      padding: 3rem 0;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      line-height: 2;
+    }
+    .state-welcome p { margin-bottom: 0.5rem; }
+    .state-welcome .highlight { color: var(--red); }
+
+    /* ─── INJECTED NOTES STYLES ─── */
+    .notes-injected {
+      font-family: var(--notes-sans);
+      font-size: 0.9rem;
+      color: var(--notes-text);
+      line-height: 1.7;
+    }
+
+    /* Override notes styles to fit OmegaNimbus */
+    .notes-injected .page { background: transparent; padding: 0; max-width: 100%; }
+    .notes-injected section {
+      background: var(--notes-surface);
+      border: 1px solid var(--notes-border);
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .notes-injected .section-label {
+      font-family: var(--notes-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--notes-orange);
+      margin-bottom: 0.5rem;
+    }
+    .notes-injected h2 {
+      font-family: var(--notes-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--notes-text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--notes-border);
+    }
+    .notes-injected h3 {
+      font-family: var(--notes-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--notes-blue);
+      margin: 1rem 0 0.5rem;
+    }
+    .notes-injected p { margin-bottom: 0.75rem; color: var(--notes-text); }
+    .notes-injected ul, .notes-injected ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .notes-injected li { margin-bottom: 0.3rem; }
+    .notes-injected table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.8rem;
+    }
+    .notes-injected th {
+      background: var(--notes-surface2);
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      font-family: var(--notes-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--notes-muted);
+      border-bottom: 1px solid var(--notes-border);
+    }
+    .notes-injected td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--notes-border);
+      vertical-align: top;
+    }
+    .notes-injected tr:last-child td { border-bottom: none; }
+    .notes-injected code {
+      font-family: var(--notes-mono);
+      font-size: 0.8rem;
+      background: var(--notes-surface2);
+      padding: 0.1rem 0.3rem;
+      border-radius: 2px;
+      color: var(--notes-orange);
+    }
+    .notes-injected strong { font-weight: 600; color: var(--notes-text); }
+    .notes-injected em { font-style: italic; color: var(--notes-muted); }
+
+    /* ─── NAV BETWEEN PARTS ─── */
+    .part-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .part-nav-btn {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .part-nav-btn:hover { color: var(--white); border-color: var(--red); }
+    .part-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .part-nav-btn .nav-label { display: block; font-size: 0.5rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .part-nav-btn.next { text-align: right; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--white); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">OMEGA<span>NIMBUS</span></a>
+    <ul>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#portfolio">Projects</a></li>
+      <li><a href="index.html#blog">Writeups</a></li>
+      <li><a href="security.html">SecOps</a></li>
+      <li><a href="notes.html" class="active">Notes</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <p class="page-eyebrow">// Certification Study Notes</p>
+    <h1 class="page-title">STUDY<br><span>NOTES</span></h1>
+    <p class="page-desc">
+      Personal study notes for AWS certifications. Written during active exam preparation — structured for retention, not just reference.
+    </p>
+  </div>
+
+  <!-- CERT SELECTOR -->
+  <div class="cert-selector">
+    <span class="cert-label">// Cert</span>
+    <button class="cert-btn active" data-cert="ccp">
+      AWS CCP <span class="cert-badge">CLF-C02</span>
+    </button>
+    <button class="cert-btn" data-cert="saa" disabled>
+      AWS SAA <span class="cert-badge soon">Coming soon</span>
+    </button>
+    <button class="cert-btn" data-cert="scs" disabled>
+      AWS SCS <span class="cert-badge soon">Coming soon</span>
+    </button>
+  </div>
+
+  <!-- NOTES LAYOUT -->
+  <div class="notes-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="notes-sidebar" id="notes-sidebar">
+
+      <!-- DOMAIN 1 -->
+      <div class="domain-group" data-domain="1">
+        <div class="domain-header" onclick="toggleDomain(1)">
+          <span class="domain-name">Domain 1 — Cloud Concepts</span>
+          <span class="domain-arrow">›</span>
+        </div>
+        <div class="parts-list" id="parts-domain-1">
+          <div class="part-item" onclick="loadPart('domain1','parte1')" data-file="aws-ccp-domain1-parte1">
+            <span class="part-number">// Part 1</span>
+            Beneficios · Conceptos fundamentales · Alta disponibilidad
+          </div>
+          <div class="part-item" onclick="loadPart('domain1','parte2')" data-file="aws-ccp-domain1-parte2">
+            <span class="part-number">// Part 2</span>
+            Well-Architected Framework · 6 Pilares
+          </div>
+          <div class="part-item" onclick="loadPart('domain1','parte3')" data-file="aws-ccp-domain1-parte3">
+            <span class="part-number">// Part 3</span>
+            Cloud Adoption Framework · 7 Rs de migración
+          </div>
+          <div class="part-item" onclick="loadPart('domain1','parte4')" data-file="aws-ccp-domain1-parte4">
+            <span class="part-number">// Part 4</span>
+            Economía de la nube · TCO · CapEx vs OpEx
+          </div>
+        </div>
+      </div>
+
+      <!-- DOMAIN 2 -->
+      <div class="domain-group" data-domain="2">
+        <div class="domain-header" onclick="toggleDomain(2)">
+          <span class="domain-name">Domain 2 — Security & Compliance</span>
+          <span class="domain-arrow">›</span>
+        </div>
+        <div class="parts-list" id="parts-domain-2">
+          <div class="part-item" onclick="loadPart('domain2','parte1')" data-file="aws-ccp-domain2-parte1">
+            <span class="part-number">// Part 1</span>
+            Modelo de Responsabilidad Compartida
+          </div>
+          <div class="part-item" onclick="loadPart('domain2','parte2')" data-file="aws-ccp-domain2-parte2">
+            <span class="part-number">// Part 2</span>
+            Seguridad · Conformidad · Cifrado · Auditoría
+          </div>
+          <div class="part-item" onclick="loadPart('domain2','parte3')" data-file="aws-ccp-domain2-parte3">
+            <span class="part-number">// Part 3</span>
+            IAM · Usuario raíz · Usuarios · Roles · Políticas
+          </div>
+          <div class="part-item" onclick="loadPart('domain2','parte4')" data-file="aws-ccp-domain2-parte4">
+            <span class="part-number">// Part 4</span>
+            Seguridad de red · NACL vs SG · WAF
+          </div>
+        </div>
+      </div>
+
+      <!-- DOMAIN 3 -->
+      <div class="domain-group" data-domain="3">
+        <div class="domain-header" onclick="toggleDomain(3)">
+          <span class="domain-name">Domain 3 — Cloud Technology</span>
+          <span class="domain-arrow">›</span>
+        </div>
+        <div class="parts-list" id="parts-domain-3">
+          <div class="part-item" onclick="loadPart('domain3','parte1')" data-file="aws-ccp-domain3-parte1">
+            <span class="part-number">// Part 1</span>
+            Métodos de acceso · Modelos de despliegue
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte2')" data-file="aws-ccp-domain3-parte2">
+            <span class="part-number">// Part 2</span>
+            Infraestructura global · Regiones · AZ · Edge
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte3')" data-file="aws-ccp-domain3-parte3">
+            <span class="part-number">// Part 3</span>
+            EC2 · Contenedores · Lambda · Auto Scaling
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte4')" data-file="aws-ccp-domain3-parte4">
+            <span class="part-number">// Part 4</span>
+            RDS · Aurora · DynamoDB · ElastiCache · DAX
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte5')" data-file="aws-ccp-domain3-parte5">
+            <span class="part-number">// Part 5</span>
+            VPC · Subredes · NAT · Endpoints · VPN
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte6')" data-file="aws-ccp-domain3-parte6">
+            <span class="part-number">// Part 6</span>
+            S3 · EBS · EFS · FSx · Clases de almacenamiento
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte7')" data-file="aws-ccp-domain3-parte7">
+            <span class="part-number">// Part 7</span>
+            IA · ML · Athena · Kinesis · Redshift · EMR
+          </div>
+          <div class="part-item" onclick="loadPart('domain3','parte8')" data-file="aws-ccp-domain3-parte8">
+            <span class="part-number">// Part 8</span>
+            CloudWatch · SQS · SNS · EventBridge
+          </div>
+        </div>
+      </div>
+
+      <!-- DOMAIN 4 -->
+      <div class="domain-group" data-domain="4">
+        <div class="domain-header" onclick="toggleDomain(4)">
+          <span class="domain-name">Domain 4 — Billing & Pricing</span>
+          <span class="domain-arrow">›</span>
+        </div>
+        <div class="parts-list" id="parts-domain-4">
+          <div class="part-item" onclick="loadPart('domain4','parte1')" data-file="aws-ccp-domain4-parte1">
+            <span class="part-number">// Part 1</span>
+            Modelos de precios EC2 · Optimización
+          </div>
+          <div class="part-item" onclick="loadPart('domain4','parte2')" data-file="aws-ccp-domain4-parte2">
+            <span class="part-number">// Part 2</span>
+            Cost Explorer · Budgets · Organizations
+          </div>
+          <div class="part-item" onclick="loadPart('domain4','parte3')" data-file="aws-ccp-domain4-parte3">
+            <span class="part-number">// Part 3</span>
+            Planes de soporte · TAM · Partner Network
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="notes-content" id="notes-content">
+      <div class="state-welcome">
+        <p>// <span class="highlight">AWS Certified Cloud Practitioner</span> — CLF-C02</p>
+        <p>// 4 domains · 19 parts · Active study notes</p>
+        <p>&nbsp;</p>
+        <p>Select a domain and part from the sidebar to begin.</p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>OMEGANIMBUS · <a href="index.html">omeganimbus.com</a></p>
+    <p>AWS CCP · CLF-C02 · Study Notes</p>
+  </footer>
+
+  <script>
+    // ─── STATE ───
+    const state = {
+      currentDomain: null,
+      currentParte: null,
+      cache: {}
+    };
+
+    const domainMeta = {
+      1: { name: 'Domain 1', title: 'Cloud Concepts', parts: 4 },
+      2: { name: 'Domain 2', title: 'Security & Compliance', parts: 4 },
+      3: { name: 'Domain 3', title: 'Cloud Technology', parts: 8 },
+      4: { name: 'Domain 4', title: 'Billing & Pricing', parts: 3 }
+    };
+
+    const partSubtitles = {
+      'domain1-parte1': 'Beneficios de la nube AWS · Conceptos fundamentales · Alta disponibilidad · Escalado',
+      'domain1-parte2': 'AWS Well-Architected Framework · 6 Pilares · Principios de diseño en la nube',
+      'domain1-parte3': 'AWS Cloud Adoption Framework · Estrategias de migración (7 Rs)',
+      'domain1-parte4': 'Economía de la nube · TCO · CapEx vs OpEx · Palancas de reducción de costes',
+      'domain2-parte1': 'Modelo de Responsabilidad Compartida · Seguridad DE la nube vs EN la nube',
+      'domain2-parte2': 'Seguridad · Gobernanza · Conformidad · Cifrado · Auditoría',
+      'domain2-parte3': 'AWS IAM · Usuario raíz · Usuarios · Grupos · Roles · Políticas · Cognito',
+      'domain2-parte4': 'Seguridad de red · NACL vs Security Groups · WAF · Herramientas de soporte',
+      'domain3-parte1': 'Métodos de acceso · Modelos de despliegue · Zonas público/privado · Conectividad',
+      'domain3-parte2': 'Infraestructura global · Regiones · AZ · Edge Locations · CloudFront vs Global Accelerator',
+      'domain3-parte3': 'Amazon EC2 · Contenedores · Lambda · Auto Scaling · Load Balancers',
+      'domain3-parte4': 'RDS · Aurora · DynamoDB · Redshift · ElastiCache · DAX · Snow Family · DMS',
+      'domain3-parte5': 'Amazon VPC · Subredes · NACL · SG · NAT · VPC Endpoints · VPN · Direct Connect · Route 53',
+      'domain3-parte6': 'S3 · EBS · EFS · FSx · Storage Gateway · AWS Backup · Clases de almacenamiento',
+      'domain3-parte7': 'IA · Machine Learning · Athena · Kinesis · Redshift · EMR · QuickSight',
+      'domain3-parte8': 'Monitorización · SQS · SNS · EventBridge · Soporte · Developer Tools',
+      'domain4-parte1': 'Modelos de precios EC2 · Optimización de costes · Dimensionamiento · Transferencia de datos',
+      'domain4-parte2': 'Herramientas de facturación · Presupuestos · Organizations · S3 Lifecycle · Calculadora AWS',
+      'domain4-parte3': 'Planes de soporte · Recursos técnicos · Comunidad · Partner Network · TAM'
+    };
+
+    // ─── TOGGLE DOMAIN ───
+    function toggleDomain(domainNum) {
+      const header = document.querySelector(`[data-domain="${domainNum}"] .domain-header`);
+      const parts = document.getElementById(`parts-domain-${domainNum}`);
+      const isOpen = parts.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.parts-list').forEach(p => p.classList.remove('open'));
+      document.querySelectorAll('.domain-header').forEach(h => h.classList.remove('open'));
+
+      if (!isOpen) {
+        parts.classList.add('open');
+        header.classList.add('open');
+      }
+    }
+
+    // ─── LOAD PART ───
+    async function loadPart(domain, parte) {
+      const key = `${domain}-${parte}`;
+      const domainNum = domain.replace('domain', '');
+      const parteNum = parte.replace('parte', '');
+      const filename = `aws-ccp-${domain}-${parte}.html`;
+
+      // Update active states
+      document.querySelectorAll('.part-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.domain-header').forEach(h => h.classList.remove('active'));
+      const activeItem = document.querySelector(`[data-file="aws-ccp-${domain}-${parte}"]`);
+      if (activeItem) activeItem.classList.add('active');
+      const domainHeader = document.querySelector(`[data-domain="${domainNum}"] .domain-header`);
+      if (domainHeader) domainHeader.classList.add('active');
+
+      // Open domain accordion
+      const partsList = document.getElementById(`parts-domain-${domainNum}`);
+      if (partsList) { partsList.classList.add('open'); domainHeader.classList.add('open'); }
+
+      state.currentDomain = domainNum;
+      state.currentParte = parseInt(parteNum);
+
+      const content = document.getElementById('notes-content');
+      content.innerHTML = '<div class="state-loading">Loading notes...</div>';
+
+      try {
+        let html;
+        if (state.cache[key]) {
+          html = state.cache[key];
+        } else {
+          const res = await fetch(`notes/${filename}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const text = await res.text();
+
+          // Extract body content (remove header)
+          const bodyMatch = text.match(/<body>([\s\S]*?)<\/body>/);
+          if (!bodyMatch) throw new Error('No body found');
+          let body = bodyMatch[1];
+          body = body.replace(/<header>[\s\S]*?<\/header>/, '');
+          body = body.replace(/<div class="page">/, '').replace(/<\/div>\s*$/, '');
+
+          state.cache[key] = body;
+          html = body;
+        }
+
+        const meta = domainMeta[domainNum];
+        const subtitle = partSubtitles[key] || '';
+
+        // Prev/next navigation
+        const totalParts = meta.parts;
+        const prevDomain = parseInt(parteNum) > 1 ? domainNum : (parseInt(domainNum) > 1 ? parseInt(domainNum) - 1 : null);
+        const prevParte = parseInt(parteNum) > 1 ? parseInt(parteNum) - 1 : (prevDomain ? domainMeta[prevDomain].parts : null);
+        const nextParte = parseInt(parteNum) < totalParts ? parseInt(parteNum) + 1 : null;
+        const nextDomain = nextParte ? domainNum : (parseInt(domainNum) < 4 ? parseInt(domainNum) + 1 : null);
+        const nextParteNum = nextParte || (nextDomain ? 1 : null);
+
+        const prevBtn = prevDomain && prevParte
+          ? `<button class="part-nav-btn" onclick="loadPart('domain${prevDomain}','parte${prevParte}')">
+               <span class="nav-label">← Previous</span>
+               Domain ${prevDomain} · Part ${prevParte}
+             </button>`
+          : `<button class="part-nav-btn" disabled>← Start</button>`;
+
+        const nextBtn = nextDomain && nextParteNum
+          ? `<button class="part-nav-btn next" onclick="loadPart('domain${nextDomain}','parte${nextParteNum}')">
+               <span class="nav-label">Next →</span>
+               Domain ${nextDomain} · Part ${nextParteNum}
+             </button>`
+          : `<button class="part-nav-btn next" disabled>End →</button>`;
+
+        content.innerHTML = `
+          <div class="content-header">
+            <p class="content-breadcrumb">AWS CCP · CLF-C02 · <span>${meta.name} — ${meta.title}</span></p>
+            <h2 class="content-title">Part ${parteNum} of ${totalParts}</h2>
+            <p class="content-subtitle">${subtitle}</p>
+          </div>
+          <div class="notes-injected">${html}</div>
+          <div class="part-nav">${prevBtn}${nextBtn}</div>
+        `;
+
+        // Scroll to top of content
+        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        content.innerHTML = `<div class="state-loading" style="color:var(--red-hot)">Error loading: ${err.message}</div>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
