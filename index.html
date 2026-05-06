@@ -700,6 +700,7 @@
       <li><a href="#about">About</a></li>
       <li><a href="#portfolio">Projects</a></li>
       <li><a href="#blog">Writeups</a></li>
+      <li><a href="security.html">SecOps</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
@@ -836,18 +837,20 @@
       </div>
 
       <div class="project-card reveal">
-        <span class="project-status status-planned">Planned</span>
+        <span class="project-status status-live">Live</span>
         <p class="project-type">// Threat Detection</p>
         <h3 class="project-title">AWS Security Monitoring Stack</h3>
         <p class="project-desc">
-          End-to-end threat detection pipeline using GuardDuty, Security Hub, and CloudWatch. Alert correlation and automated response via Lambda. Simulated attack scenarios for validation.
+          End-to-end threat detection pipeline using GuardDuty, Security Hub, and CloudTrail. Automated alerts via EventBridge + SNS. Real-time findings dashboard accessible live.
         </p>
         <div class="project-tags">
           <span class="project-tag">GuardDuty</span>
           <span class="project-tag">Security Hub</span>
+          <span class="project-tag">EventBridge</span>
+          <span class="project-tag">SNS</span>
           <span class="project-tag">Lambda</span>
-          <span class="project-tag">SIEM</span>
         </div>
+        <a href="security.html" style="display:inline-block;margin-top:1rem;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.2em;color:var(--red);text-decoration:none;text-transform:uppercase;">→ View Live Dashboard</a>
       </div>
 
       <div class="project-card reveal">
