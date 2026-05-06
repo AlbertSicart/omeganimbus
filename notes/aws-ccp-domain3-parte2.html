@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* RESILIENCE LEVELS */
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .res-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .res-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .res-level { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.06em; }
+  .res-name  { font-size: 13px; font-weight: 600; }
+  .res-body  { padding: 10px 14px; }
+  .res-body p { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 300; }
+  .res-body .examples { font-size: 11px; color: #cdd9e5; font-style: italic; }
+  .res-body .failure  { font-size: 11px; color: var(--red); margin-top: 5px; font-weight: 300; }
+
+  .r-global  .res-header { background: var(--blue-dim);   border-bottom-color: rgba(88,166,255,0.2); }
+  .r-global  .res-name   { color: var(--blue); }
+  .r-regional .res-header { background: var(--green-dim); border-bottom-color: rgba(63,185,80,0.2); }
+  .r-regional .res-name  { color: var(--green); }
+  .r-zonal   .res-header { background: var(--yellow-dim); border-bottom-color: rgba(210,153,34,0.2); }
+  .r-zonal   .res-name   { color: var(--yellow); }
+
+  /* INFRA HIERARCHY DIAGRAM */
+  .hierarchy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .hierarchy-title { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+  .h-level {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .h-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 2px;
+    flex-shrink: 0;
+    width: 20px;
+  }
+  .h-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .h-line {
+    width: 2px;
+    flex: 1;
+    min-height: 18px;
+    margin-top: 2px;
+  }
+  .h-content { flex: 1; padding-bottom: 4px; }
+  .h-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .h-desc { font-size: 11px; color: var(--muted); font-weight: 300; }
+  .h-examples { font-size: 10px; font-family: var(--mono); margin-top: 3px; }
+
+  .hl-global   .h-dot { background: var(--blue); }
+  .hl-global   .h-line { background: rgba(88,166,255,0.3); }
+  .hl-global   .h-name { color: var(--blue); }
+  .hl-global   .h-examples { color: var(--blue); }
+
+  .hl-region   .h-dot { background: var(--green); }
+  .hl-region   .h-line { background: rgba(63,185,80,0.3); }
+  .hl-region   .h-name { color: var(--green); }
+  .hl-region   .h-examples { color: var(--green); }
+
+  .hl-az       .h-dot { background: var(--yellow); }
+  .hl-az       .h-line { background: rgba(210,153,34,0.3); }
+  .hl-az       .h-name { color: var(--yellow); }
+  .hl-az       .h-examples { color: var(--yellow); }
+
+  .hl-dc       .h-dot { background: var(--purple); }
+  .hl-dc       .h-line { background: transparent; }
+  .hl-dc       .h-name { color: var(--purple); }
+  .hl-dc       .h-examples { color: var(--purple); }
+
+  /* EDGE SERVICES TABLE */
+  .edge-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .edge-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .edge-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .edge-table tr:nth-child(even) td { background: var(--surface); }
+  .edge-table tr:nth-child(odd)  td { background: var(--bg); }
+  .svc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* SERVICE MODELS */
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .model-card h3 { font-size: 12px; font-weight: 600; font-family: var(--mono); margin-bottom: 5px; }
+  .model-card p  { font-size: 12px; color: var(--muted); margin: 0; font-weight: 300; }
+  .model-card .ex { font-size: 11px; color: #cdd9e5; margin-top: 4px; font-style: italic; }
+  .m-iaas { border-top: 2px solid var(--blue);   } .m-iaas h3 { color: var(--blue); }
+  .m-paas { border-top: 2px solid var(--green);  } .m-paas h3 { color: var(--green); }
+  .m-saas { border-top: 2px solid var(--purple); } .m-saas h3 { color: var(--purple); }
+  .m-daas { border-top: 2px solid var(--teal);   } .m-daas h3 { color: var(--teal); }
+
+  /* REGION SELECTION */
+  .region-factors {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .factor {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .factor-icon { font-size: 16px; flex-shrink: 0; }
+  .factor-text h4 { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .factor-text p  { font-size: 11px; color: var(--muted); margin: 0; font-weight: 300; }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .res-grid, .models-grid, .region-factors { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 2</h1>
+    <div class="subtitle">Infraestructura global · Regiones · AZ · Edge Locations · CloudFront vs Global Accelerator</div>
+  </header>
+
+  <!-- NIVELES DE RESISTENCIA -->
+  <section>
+    <div class="section-label">01 · Resistencia de servicios AWS</div>
+    <h2>Global · Regional · Zonal — Tres niveles de resistencia</h2>
+
+    <div class="res-grid">
+      <div class="res-card r-global">
+        <div class="res-header">
+          <div class="res-level">NIVEL 1</div>
+          <div class="res-name">Resistencia global</div>
+        </div>
+        <div class="res-body">
+          <p>Opera globalmente. Los datos se replican en múltiples regiones. Sobrevive al fallo de una región completa.</p>
+          <div class="examples">IAM · CloudFront · Amazon Route 53</div>
+          <div class="failure">Falla si: falla AWS global (prácticamente imposible)</div>
+        </div>
+      </div>
+
+      <div class="res-card r-regional">
+        <div class="res-header">
+          <div class="res-level">NIVEL 2</div>
+          <div class="res-name">Resistencia regional</div>
+        </div>
+        <div class="res-body">
+          <p>Opera en una región. Replica datos a múltiples AZ dentro de esa región. Sobrevive al fallo de una AZ.</p>
+          <div class="examples">Amazon EFS · AWS Batch · S3 (por defecto)</div>
+          <div class="failure">Falla si: falla la región completa</div>
+        </div>
+      </div>
+
+      <div class="res-card r-zonal">
+        <div class="res-header">
+          <div class="res-level">NIVEL 3</div>
+          <div class="res-name">Resistencia zonal</div>
+        </div>
+        <div class="res-body">
+          <p>Vinculado a una AZ concreta. Si la AZ falla, el servicio también falla.</p>
+          <div class="examples">Amazon EBS · Amazon EC2 (instancia individual)</div>
+          <div class="failure">Falla si: falla su AZ específica</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- JERARQUÍA DE INFRAESTRUCTURA -->
+  <section>
+    <div class="section-label">02 · Jerarquía de componentes</div>
+    <h2>De centros de datos a infraestructura global</h2>
+
+    <div class="hierarchy">
+      <div class="hierarchy-title">Estructura anidada de la infraestructura AWS</div>
+
+      <div class="h-level hl-global">
+        <div class="h-connector"><div class="h-dot"></div><div class="h-line"></div></div>
+        <div class="h-content">
+          <div class="h-name">Infraestructura global AWS</div>
+          <div class="h-desc">Red global de alta velocidad que conecta todas las regiones. IAM, CloudFront y Route 53 operan a este nivel.</div>
+          <div class="h-examples">Múltiples regiones en todos los continentes</div>
+        </div>
+      </div>
+
+      <div class="h-level hl-region">
+        <div class="h-connector"><div class="h-dot"></div><div class="h-line"></div></div>
+        <div class="h-content">
+          <div class="h-name">Región AWS</div>
+          <div class="h-desc">Zona geográfica con 2 o más AZ. Los datos en una región NO salen de ella salvo que se muevan explícitamente. Cada región es soberana y tolerante a fallos de otras regiones.</div>
+          <div class="h-examples">eu-west-1 (Irlanda) · us-east-1 (Virginia) · ap-southeast-1 (Singapur)</div>
+        </div>
+      </div>
+
+      <div class="h-level hl-az">
+        <div class="h-connector"><div class="h-dot"></div><div class="h-line"></div></div>
+        <div class="h-content">
+          <div class="h-name">Zona de disponibilidad (AZ)</div>
+          <div class="h-desc">Uno o más centros de datos físicamente separados dentro de la región. Alimentación redundante, red propia. Conectadas entre sí con redes redundantes de alta velocidad.</div>
+          <div class="h-examples">eu-west-1a · eu-west-1b · eu-west-1c</div>
+        </div>
+      </div>
+
+      <div class="h-level hl-dc">
+        <div class="h-connector"><div class="h-dot"></div></div>
+        <div class="h-content">
+          <div class="h-name">Centro de datos</div>
+          <div class="h-desc">Edificio físico con servidores, SAN, switches, load balancers, firewalls, almacenamiento. Puede haber más de uno por AZ.</div>
+          <div class="h-examples">Hardware físico — gestionado completamente por AWS</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px; color:var(--muted);">Extensiones de región: <strong>Zonas locales</strong> (mayor cercanía geográfica a usuarios) · <strong>AWS Wavelength</strong> (latencia ultrabaja para dispositivos móviles, desplegado en infraestructura de operadoras).</p>
+  </section>
+
+  <hr>
+
+  <!-- EDGE LOCATIONS -->
+  <section>
+    <div class="section-label">03 · Ubicaciones periféricas y servicios globales</div>
+    <h2>CloudFront vs Global Accelerator</h2>
+
+    <table class="edge-table">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Qué hace</th>
+          <th>Caché</th>
+          <th>Protocolo</th>
+          <th>Caso de uso ideal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="svc-name" style="color:var(--blue)">Amazon CloudFront</span></td>
+          <td>CDN. Almacena en caché contenido estático y dinámico en Edge Locations. Sirve desde la ubicación más cercana al usuario.</td>
+          <td><span class="badge green">Sí — caché en edge</span></td>
+          <td><span class="badge blue">HTTP/S</span></td>
+          <td>Distribución de contenido web, imágenes, vídeos, APIs. Reducir latencia de carga de contenido.</td>
+        </tr>
+        <tr>
+          <td><span class="svc-name" style="color:var(--purple)">AWS Global Accelerator</span></td>
+          <td>Enruta tráfico a través de la red global AWS desde las Edge Locations hasta las aplicaciones en las regiones. Sin caché.</td>
+          <td><span class="badge red">No hay caché</span></td>
+          <td><span class="badge purple">TCP · UDP</span></td>
+          <td>Apps que necesitan IP estática, failover regional rápido, gaming, VoIP, IoT.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--teal);">
+      <div class="def-title" style="color: var(--teal);">Puntos en común CloudFront y Global Accelerator</div>
+      Ambos usan la <strong>red global de AWS</strong> y las <strong>Edge Locations</strong>. Ambos integran protección <strong>AWS Shield</strong> contra DDoS. La diferencia clave: CloudFront almacena en caché · Global Accelerator solo enruta.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SELECCIÓN DE REGIÓN -->
+  <section>
+    <div class="section-label">04 · Cómo elegir región</div>
+    <h2>Factores para seleccionar una región AWS</h2>
+
+    <div class="region-factors">
+      <div class="factor">
+        <div class="factor-icon">⚖️</div>
+        <div class="factor-text">
+          <h4>Conformidad y soberanía de datos</h4>
+          <p>Los datos no salen de la región sin acción explícita. Leyes locales (GDPR, etc.) pueden exigir regiones específicas.</p>
+        </div>
+      </div>
+      <div class="factor">
+        <div class="factor-icon">⚡</div>
+        <div class="factor-text">
+          <h4>Latencia</h4>
+          <p>Elegir la región geográficamente más cercana a los usuarios finales reduce la latencia.</p>
+        </div>
+      </div>
+      <div class="factor">
+        <div class="factor-icon">🛠️</div>
+        <div class="factor-text">
+          <h4>Disponibilidad de servicios</h4>
+          <p>No todos los servicios AWS están disponibles en todas las regiones. Verificar antes de diseñar.</p>
+        </div>
+      </div>
+      <div class="factor">
+        <div class="factor-icon">💰</div>
+        <div class="factor-text">
+          <h4>Coste</h4>
+          <p>Los precios de los servicios varían entre regiones. Una misma instancia puede tener distinto coste en us-east-1 vs eu-west-1.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- MODELOS DE SERVICIO -->
+  <section>
+    <div class="section-label">05 · Modelos de servicio cloud</div>
+    <h2>IaaS · PaaS · SaaS · DBaaS</h2>
+
+    <div class="models-grid">
+      <div class="model-card m-iaas">
+        <h3>IaaS — Infraestructura como Servicio</h3>
+        <p>El proveedor gestiona hardware y virtualización. El cliente gestiona SO, runtime y apps.</p>
+        <div class="ex">Amazon EC2, Amazon VPC, Amazon EBS</div>
+      </div>
+      <div class="model-card m-paas">
+        <h3>PaaS — Plataforma como Servicio</h3>
+        <p>El proveedor gestiona infraestructura + SO + runtime. El cliente solo despliega código.</p>
+        <div class="ex">AWS Elastic Beanstalk, AWS Lambda</div>
+      </div>
+      <div class="model-card m-saas">
+        <h3>SaaS — Software como Servicio</h3>
+        <p>El proveedor gestiona todo. El cliente solo usa la aplicación.</p>
+        <div class="ex">Amazon Chime, Amazon WorkMail, Salesforce</div>
+      </div>
+      <div class="model-card m-daas">
+        <h3>DBaaS — Base de datos como Servicio</h3>
+        <p>Base de datos totalmente administrada. El proveedor gestiona el motor, parches, backups y HA.</p>
+        <div class="ex">Amazon RDS, DynamoDB, Aurora</div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>3 niveles de resistencia</strong>: Global (IAM, CloudFront, Route 53) · Regional (EFS, S3) · Zonal (EBS, EC2 individual).</li>
+      <li><strong>Región</strong> = 2+ AZ. <strong>AZ</strong> = 1+ centros de datos. Los datos no salen de la región sin acción explícita.</li>
+      <li><strong>CloudFront</strong> = CDN con caché en edge, HTTP/S. <strong>Global Accelerator</strong> = enrutamiento TCP/UDP sin caché, IP estática.</li>
+      <li>Ambos (CloudFront y Global Accelerator) usan Edge Locations y tienen Shield integrado.</li>
+      <li>Para elegir región: <strong>conformidad → latencia → disponibilidad de servicios → coste</strong>. En ese orden de prioridad.</li>
+      <li><strong>Wavelength</strong> = latencia ultrabaja para móviles (desplegado en operadoras). <strong>Zonas locales</strong> = extensión de región geográficamente cercana.</li>
+      <li>AWS Outposts = infraestructura AWS en las instalaciones del cliente (nube privada).</li>
+      <li><strong>IaaS</strong> (EC2) → mayor control. <strong>PaaS</strong> (Beanstalk) → solo código. <strong>SaaS</strong> → solo uso. <strong>DBaaS</strong> → BD administrada.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

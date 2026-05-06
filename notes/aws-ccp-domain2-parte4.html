@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 2 · Parte 4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* NACL vs SG comparison */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .compare-table th {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 9px 12px; font-family: var(--mono); font-size: 10px;
+    color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left;
+  }
+  .compare-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .compare-table tr:nth-child(even) td { background: var(--surface); }
+  .compare-table tr:nth-child(odd)  td { background: var(--bg); }
+  .compare-table .feature { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+  .compare-table th.nacl-h { color: var(--yellow); }
+  .compare-table th.sg-h   { color: var(--blue); }
+
+  /* VPC DIAGRAM */
+  .vpc-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    position: relative;
+  }
+  .vpc-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .vpc-box {
+    border: 1px dashed rgba(88,166,255,0.4);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .vpc-box-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+  .subnet-box {
+    border: 1px dashed rgba(210,153,34,0.4);
+    border-radius: 4px;
+    padding: 10px;
+    background: rgba(210,153,34,0.04);
+  }
+  .subnet-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--yellow);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .instance-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .instance {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .sg-ring {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    flex-shrink: 0;
+  }
+  .nacl-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--yellow);
+    background: var(--yellow-dim);
+    border: 1px solid rgba(210,153,34,0.3);
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+  .sg-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--blue);
+    background: var(--blue-dim);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+
+  /* SERVICES GRID */
+  .svc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .svc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .svc-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .svc-icon { font-size: 16px; flex-shrink: 0; }
+  .svc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .svc-body { padding: 10px 14px; }
+  .svc-body .what { font-size: 12px; color: #cdd9e5; font-weight: 300; margin-bottom: 5px; }
+  .svc-body .keyword { display: inline-block; margin-top: 5px; font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; }
+
+  .c-trusted  .svc-header { background: var(--green-dim);  border-bottom-color: rgba(63,185,80,0.2); }
+  .c-trusted  .svc-name   { color: var(--green); }
+  .c-trusted  .keyword    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+
+  .c-inspector .svc-header { background: var(--purple-dim); border-bottom-color: rgba(188,140,255,0.2); }
+  .c-inspector .svc-name   { color: var(--purple); }
+  .c-inspector .keyword    { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+
+  .c-market   .svc-header { background: var(--orange-dim); border-bottom-color: rgba(249,115,22,0.2); }
+  .c-market   .svc-name   { color: var(--orange); }
+  .c-market   .keyword    { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* RESOURCES LIST */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .resource-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+  }
+  .resource-item h4 { font-size: 12px; font-weight: 600; color: var(--teal); font-family: var(--mono); margin-bottom: 4px; }
+  .resource-item p  { font-size: 11px; color: var(--muted); margin: 0; font-weight: 300; }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .instance-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 2 — Parte 4</h1>
+    <div class="subtitle">Seguridad de red · NACL vs Security Groups · WAF · Recursos y herramientas de soporte</div>
+  </header>
+
+  <!-- VPC DIAGRAM -->
+  <section>
+    <div class="section-label">01 · Seguridad de red en VPC</div>
+    <h2>Dónde actúa cada control de red</h2>
+
+    <div class="vpc-diagram">
+      <div class="vpc-label">Amazon VPC</div>
+      <div class="vpc-box">
+        <div class="vpc-box-label">VPC boundary</div>
+        <div class="subnet-box">
+          <div class="subnet-label">
+            Subred
+            <span class="nacl-tag">NACL → actúa aquí (límite de subred)</span>
+          </div>
+          <div class="instance-row">
+            <div class="instance">
+              <span class="sg-ring"></span>
+              EC2
+              <span class="sg-tag">SG → actúa aquí (ENI del recurso)</span>
+            </div>
+            <div class="instance">
+              <span class="sg-ring"></span>
+              RDS
+              <span class="sg-tag">SG → actúa aquí</span>
+            </div>
+          </div>
+          <p style="font-size:11px; color:var(--muted); margin-top:8px; margin-bottom:0;">
+            ⚠ Tráfico EC2 ↔ RDS dentro de la misma subred → la NACL <strong>no interviene</strong> (no cruza el límite de subred)
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- NACL vs SG TABLE -->
+  <section>
+    <div class="section-label">02 · Comparativa clave para el examen</div>
+    <h2>NACL vs Security Group</h2>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th class="nacl-h">NACL (Network ACL)</th>
+          <th class="sg-h">Security Group</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="feature">Nivel de operación</td>
+          <td>Subred (límite de subred)</td>
+          <td>Recurso (ENI de EC2, RDS…)</td>
+        </tr>
+        <tr>
+          <td class="feature">Estado (stateful)</td>
+          <td><span class="badge yellow">Sin estado (stateless)</span> — tráfico entrada y salida son flujos independientes</td>
+          <td><span class="badge blue">Con estado (stateful)</span> — si entra tráfico, la salida se permite automáticamente</td>
+        </tr>
+        <tr>
+          <td class="feature">Reglas de entrada y salida</td>
+          <td>Deben definirse explícitamente por separado</td>
+          <td>La regla de entrada cubre también la salida del mismo flujo</td>
+        </tr>
+        <tr>
+          <td class="feature">Denegación explícita</td>
+          <td><span class="badge green">Sí</span> — puede crear reglas de Deny explícito</td>
+          <td><span class="badge red">No</span> — solo Allow. Lo no permitido se deniega implícitamente</td>
+        </tr>
+        <tr>
+          <td class="feature">Reglas por orden</td>
+          <td>Evaluadas en orden numérico ascendente. Primera coincidencia gana.</td>
+          <td>Todas las reglas se evalúan. Se aplica la unión de los permisos.</td>
+        </tr>
+        <tr>
+          <td class="feature">Referencia a recursos AWS</td>
+          <td><span class="badge red">No</span> — solo IPs y rangos CIDR</td>
+          <td><span class="badge green">Sí</span> — puede referenciar otros Security Groups o a sí mismo</td>
+        </tr>
+        <tr>
+          <td class="feature">Cuándo usarlo</td>
+          <td>Denegar tráfico explícitamente, bloquear IPs específicas a nivel de subred</td>
+          <td>Control de acceso habitual a nivel de instancia o servicio</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--red);">
+      <div class="def-title" style="color: var(--red);">Regla crítica para el examen</div>
+      <strong>Los Security Groups NO pueden hacer Deny explícito.</strong> Si necesitas bloquear una IP o rango de IPs específico, debes usar una <strong>NACL</strong>. Los SGs solo tienen reglas Allow; todo lo que no está permitido se deniega por defecto de forma implícita.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- WAF -->
+  <section>
+    <div class="section-label">03 · Filtrado de tráfico web</div>
+    <h2>AWS WAF — Cuándo elegirlo</h2>
+
+    <div class="def" style="border-left-color: var(--yellow);">
+      <div class="def-title" style="color: var(--yellow);">AWS WAF vs NACL vs Security Group</div>
+      <strong>NACL y SG</strong> operan a nivel de red (IPs, puertos, protocolos).<br>
+      <strong>AWS WAF</strong> opera a nivel de aplicación (capa 7): filtra tráfico HTTP/S según <strong>direcciones IP, cabeceras HTTP, URLs, patrones de cuerpo de la solicitud</strong>.<br><br>
+      Casos de uso de WAF: bloquear inyecciones SQL, XSS, bots, IPs geográficas, rate limiting por URL.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- OTROS SERVICIOS -->
+  <section>
+    <div class="section-label">04 · Herramientas de seguridad adicionales</div>
+    <h2>Trusted Advisor · Inspector · AWS Marketplace</h2>
+
+    <div class="svc-grid">
+      <div class="svc-card c-trusted">
+        <div class="svc-header">
+          <span class="svc-icon">💡</span>
+          <span class="svc-name">AWS Trusted Advisor</span>
+        </div>
+        <div class="svc-body">
+          <div class="what">Analiza tu cuenta AWS y ofrece recomendaciones en 5 categorías: seguridad, coste, rendimiento, tolerancia a fallos y límites de servicio.</div>
+          <span class="keyword">recomendaciones · buenas prácticas · múltiples pilares</span>
+        </div>
+      </div>
+
+      <div class="svc-card c-inspector">
+        <div class="svc-header">
+          <span class="svc-icon">🔬</span>
+          <span class="svc-name">Amazon Inspector</span>
+        </div>
+        <div class="svc-body">
+          <div class="what">Análisis automatizado de vulnerabilidades en EC2, contenedores Lambda. Genera hallazgos con severidad y recomendaciones de remediación.</div>
+          <span class="keyword">vulnerabilidades · CVE · EC2 · contenedores</span>
+        </div>
+      </div>
+
+      <div class="svc-card c-market">
+        <div class="svc-header">
+          <span class="svc-icon">🛒</span>
+          <span class="svc-name">AWS Marketplace</span>
+        </div>
+        <div class="svc-body">
+          <div class="what">Catálogo de software de terceros (firewalls, SIEM, antivirus, herramientas de conformidad) listo para desplegar en tu cuenta AWS.</div>
+          <span class="keyword">terceros · software · despliegue directo</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--green);">
+      <div class="def-title" style="color: var(--green);">Pen Testing en AWS</div>
+      Puedes realizar pruebas de penetración en tus propios recursos AWS <strong>sin aprobación previa</strong>, pero solo para <strong>ciertos servicios permitidos</strong> (EC2, RDS, CloudFront, Aurora, API Gateway, Lambda, Lightsail, Elastic Beanstalk). Actividades como DDoS simulado o port flooding están siempre prohibidas sin permiso explícito de AWS.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- RECURSOS DE INFORMACIÓN -->
+  <section>
+    <div class="section-label">05 · Dónde buscar información</div>
+    <h2>Recursos de seguridad y conformidad en AWS</h2>
+
+    <div class="resources-grid">
+      <div class="resource-item">
+        <h4>AWS Knowledge Center</h4>
+        <p>Respuestas a preguntas frecuentes y casos prácticos resueltos por el equipo de AWS.</p>
+      </div>
+      <div class="resource-item">
+        <h4>AWS Security Center</h4>
+        <p>Hub de información de seguridad: noticias, alertas, mejores prácticas y recursos de seguridad.</p>
+      </div>
+      <div class="resource-item">
+        <h4>AWS Security Blog</h4>
+        <p>Artículos técnicos del equipo de seguridad de AWS sobre nuevas funciones, casos de uso y guías.</p>
+      </div>
+      <div class="resource-item">
+        <h4>Documentación oficial AWS</h4>
+        <p>Guías de usuario, referencias de API, casos prácticos y whitepapers por servicio.</p>
+      </div>
+      <div class="resource-item">
+        <h4>AWS Whitepapers</h4>
+        <p>Documentos técnicos en profundidad sobre arquitectura, seguridad, conformidad y economía de la nube.</p>
+      </div>
+      <div class="resource-item">
+        <h4>Foro de seguridad AWS</h4>
+        <p>Comunidad para resolver dudas y compartir experiencias sobre seguridad en AWS.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>NACL = subred, stateless.</strong> Debes definir reglas de entrada Y salida por separado. Puede hacer Deny explícito.</li>
+      <li><strong>Security Group = recurso (ENI), stateful.</strong> Solo reglas Allow. Deny implícito. No puede hacer Deny explícito.</li>
+      <li>Si la pregunta pide <strong>bloquear una IP específica</strong> → NACL (SG no puede hacer Deny explícito).</li>
+      <li>Tráfico entre instancias <strong>dentro de la misma subred</strong> → la NACL no interviene.</li>
+      <li><strong>AWS WAF</strong> = capa 7 (HTTP/S). NACL y SG = capa 3/4 (red/transporte).</li>
+      <li><strong>Trusted Advisor</strong> = recomendaciones en 5 áreas (seguridad, coste, rendimiento, tolerancia, límites).</li>
+      <li><strong>AWS Marketplace</strong> = software de terceros certificado para desplegar en AWS. No es un servicio AWS nativo.</li>
+      <li>Pen testing permitido sin aprobación previa solo en <strong>servicios específicos autorizados por AWS</strong>.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

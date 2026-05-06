@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 1 · Parte 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+  .breadcrumb {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+
+  .def {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .def-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* GENERAL PRINCIPLES */
+  .principles-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .principle-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #cdd9e5;
+    font-weight: 300;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .principle-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  /* PILLARS */
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .pillar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pillar-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    width: 24px;
+    flex-shrink: 0;
+  }
+  .pillar-icon {
+    font-size: 16px;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .pillar-title {
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+  }
+  .pillar-body {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .pillar-def {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .pillar-principles {
+    list-style: none;
+    padding: 0;
+  }
+  .pillar-principles li {
+    font-size: 12px;
+    color: #cdd9e5;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    font-weight: 300;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .pillar-principles li:last-child { border: none; }
+  .pillar-principles li::before {
+    content: '›';
+    font-family: var(--mono);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* PILLAR COLORS */
+  .p1 .pillar-header { border-left: 3px solid var(--blue); }
+  .p1 .pillar-title { color: var(--blue); }
+  .p1 .pillar-principles li::before { color: var(--blue); }
+
+  .p2 .pillar-header { border-left: 3px solid var(--red); }
+  .p2 .pillar-title { color: var(--red); }
+  .p2 .pillar-principles li::before { color: var(--red); }
+
+  .p3 .pillar-header { border-left: 3px solid var(--green); }
+  .p3 .pillar-title { color: var(--green); }
+  .p3 .pillar-principles li::before { color: var(--green); }
+
+  .p4 .pillar-header { border-left: 3px solid var(--purple); }
+  .p4 .pillar-title { color: var(--purple); }
+  .p4 .pillar-principles li::before { color: var(--purple); }
+
+  .p5 .pillar-header { border-left: 3px solid var(--yellow); }
+  .p5 .pillar-title { color: var(--yellow); }
+  .p5 .pillar-principles li::before { color: var(--yellow); }
+
+  .p6 .pillar-header { border-left: 3px solid var(--teal); }
+  .p6 .pillar-title { color: var(--teal); }
+  .p6 .pillar-principles li::before { color: var(--teal); }
+
+  /* DESIGN PATTERNS */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .pattern-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .pattern-card h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .pattern-card p {
+    font-size: 12px;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  /* EXAM TIP */
+  .exam-tip {
+    background: var(--orange-dim);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-top: 20px;
+  }
+  .exam-tip-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li {
+    font-size: 13px;
+    color: #cdd9e5;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(249,115,22,0.15);
+    font-weight: 300;
+  }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  @media (max-width: 600px) {
+    .pillar-body { grid-template-columns: 1fr; }
+    .scaling-grid { grid-template-columns: 1fr; }
+  }
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 1 — Parte 2</h1>
+    <div class="subtitle">AWS Well-Architected Framework · 6 Pilares · Principios de diseño en la nube</div>
+  </header>
+
+  <!-- DEFINICIÓN WAF -->
+  <section>
+    <div class="section-label">01 · Definición</div>
+    <h2>¿Qué es AWS Well-Architected Framework?</h2>
+    <div class="def">
+      <div class="def-title">AWS Well-Architected Framework</div>
+      Conjunto de <strong>prácticas recomendadas y estrategias</strong> de AWS para arquitectar sistemas en la nube. Ayuda a diseñar, construir y gestionar sistemas <strong>fiables, seguros, eficientes y rentables</strong>. Se estructura en <strong>6 pilares</strong> y un conjunto de principios de diseño generales.
+    </div>
+    <p style="font-size:12px; color: var(--muted);">AWS también ofrece la <strong>Well-Architected Tool</strong>: revisa tus cargas de trabajo y las compara con las prácticas recomendadas más recientes de AWS.</p>
+  </section>
+
+  <hr>
+
+  <!-- PRINCIPIOS GENERALES -->
+  <section>
+    <div class="section-label">02 · Base común</div>
+    <h2>Principios de diseño generales</h2>
+    <div class="principles-list">
+      <div class="principle-item"><div class="dot"></div>Eliminar suposiciones sobre capacidad → usar Auto Scaling</div>
+      <div class="principle-item"><div class="dot"></div>Probar sistemas a escala de producción</div>
+      <div class="principle-item"><div class="dot"></div>Automatizar la arquitectura para facilitar la experimentación</div>
+      <div class="principle-item"><div class="dot"></div>Permitir cambios evolutivos en la arquitectura</div>
+      <div class="principle-item"><div class="dot"></div>Usar datos para tomar decisiones de mejora</div>
+      <div class="principle-item"><div class="dot"></div>Mejorar mediante game days y pruebas de funcionamiento</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- 6 PILARES -->
+  <section>
+    <div class="section-label">03 · Los 6 pilares</div>
+    <h2>Well-Architected Framework — Pilares y principios</h2>
+
+    <div class="pillar p1">
+      <div class="pillar-header">
+        <div class="pillar-num">01</div>
+        <div class="pillar-icon">⚙️</div>
+        <div class="pillar-title">Excelencia Operativa</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Apoyar el desarrollo y ejecutar cargas de trabajo con eficacia. Obtener información sobre operaciones y mejorar continuamente los procesos para aportar valor empresarial.</div>
+        <ul class="pillar-principles">
+          <li>Operar como código</li>
+          <li>Cambios frecuentes, pequeños y reversibles</li>
+          <li>Refinar procedimientos de operaciones con frecuencia</li>
+          <li>Anticiparse a los errores</li>
+          <li>Aprender de todos los errores operativos</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar p2">
+      <div class="pillar-header">
+        <div class="pillar-num">02</div>
+        <div class="pillar-icon">🔒</div>
+        <div class="pillar-title">Seguridad</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Proteger datos, sistemas y activos. Aprovechar las tecnologías cloud para mejorar la seguridad de la organización.</div>
+        <ul class="pillar-principles">
+          <li>Implementar una base de identidad sólida</li>
+          <li>Mantener la trazabilidad</li>
+          <li>Aplicar seguridad a todas las capas</li>
+          <li>Automatizar prácticas recomendadas de seguridad</li>
+          <li>Proteger datos en tránsito y en reposo</li>
+          <li>Restringir el acceso a los datos</li>
+          <li>Prepararse para eventos de seguridad</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar p3">
+      <div class="pillar-header">
+        <div class="pillar-num">03</div>
+        <div class="pillar-icon">🛡️</div>
+        <div class="pillar-title">Fiabilidad</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Capacidad de una carga de trabajo para llevar a cabo su función de forma correcta y uniforme cuando se espera que lo haga. Incluye gestionar y probar la carga a lo largo de todo su ciclo de vida.</div>
+        <ul class="pillar-principles">
+          <li>Recuperarse automáticamente de los errores</li>
+          <li>Probar los procedimientos de recuperación</li>
+          <li>Escalar horizontalmente para aumentar disponibilidad</li>
+          <li>Dejar de hacer suposiciones sobre la capacidad</li>
+          <li>Gestionar cualquier cambio en la automatización</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar p4">
+      <div class="pillar-header">
+        <div class="pillar-num">04</div>
+        <div class="pillar-icon">⚡</div>
+        <div class="pillar-title">Eficiencia del Rendimiento</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Utilizar los recursos de computación de forma eficiente para satisfacer los requisitos del sistema y mantener esa eficiencia a medida que la demanda y la tecnología evolucionan.</div>
+        <ul class="pillar-principles">
+          <li>Democratizar las tecnologías avanzadas</li>
+          <li>Lograr alcance global en minutos</li>
+          <li>Usar arquitecturas serverless</li>
+          <li>Experimentar más a menudo</li>
+          <li>Comprender el funcionamiento del sistema</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar p5">
+      <div class="pillar-header">
+        <div class="pillar-num">05</div>
+        <div class="pillar-icon">💰</div>
+        <div class="pillar-title">Optimización de Costes</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Ejecutar sistemas para ofrecer valor empresarial al precio más bajo posible.</div>
+        <ul class="pillar-principles">
+          <li>Adoptar un modelo de consumo</li>
+          <li>Medir la eficiencia general</li>
+          <li>Dejar de gastar en tareas indiferenciadas</li>
+          <li>Analizar y atribuir el gasto</li>
+          <li>Usar servicios administrados para reducir costes</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pillar p6">
+      <div class="pillar-header">
+        <div class="pillar-num">06</div>
+        <div class="pillar-icon">🌿</div>
+        <div class="pillar-title">Sostenibilidad</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-def">Minimizar el impacto medioambiental de las cargas de trabajo en la nube, especialmente el consumo y la eficiencia energética.</div>
+        <ul class="pillar-principles">
+          <li>Conocer el impacto medioambiental</li>
+          <li>Establecer objetivos de sostenibilidad</li>
+          <li>Maximizar el uso de los recursos</li>
+          <li>Prever y aprovechar hardware y software más eficientes</li>
+          <li>Usar servicios administrados</li>
+          <li>Reducir el impacto posterior de las cargas de trabajo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PATRONES DE DISEÑO CLAVE -->
+  <section>
+    <div class="section-label">04 · Para el examen</div>
+    <h2>Patrones de diseño clave a conocer</h2>
+    <div class="pattern-grid">
+      <div class="pattern-card">
+        <h3>Diseño a prueba de fallos</h3>
+        <p>Asumir que los componentes fallarán. Diseñar la arquitectura para que el sistema siga operando ante un fallo.</p>
+      </div>
+      <div class="pattern-card">
+        <h3>Desacoplamiento</h3>
+        <p>Separar componentes para que no dependan directamente unos de otros. Principio de arquitectura orientada a servicios (SOA).</p>
+      </div>
+      <div class="pattern-card">
+        <h3>Elasticidad</h3>
+        <p>Implementar escalado automático para ajustar la capacidad a la demanda. Clave para optimizar coste y rendimiento.</p>
+      </div>
+      <div class="pattern-card">
+        <h3>Paralelización</h3>
+        <p>Dividir un trabajo en unidades simples y distribuirlas entre varios componentes. Ejemplo: fragmentar grandes datasets para procesamiento simultáneo.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li>El WAF tiene <strong>6 pilares</strong>: Excelencia Operativa, Seguridad, Fiabilidad, Eficiencia del Rendimiento, Optimización de Costes, Sostenibilidad.</li>
+      <li>El examen presentará <strong>escenarios prácticos</strong>: deberás identificar qué pilar o principio aplica.</li>
+      <li><strong>Fiabilidad</strong> incluye recuperación automática y escalado horizontal — se solapa con HA de la Parte 1.</li>
+      <li><strong>Sostenibilidad</strong> es el 6.º pilar — añadido recientemente. No confundir con optimización de costes.</li>
+      <li><strong>Paralelización</strong> ≠ desacoplamiento. Desacoplar separa dependencias; paralelizar distribuye la carga de trabajo.</li>
+      <li><strong>Well-Architected Tool</strong> = herramienta de AWS que evalúa tu arquitectura contra las prácticas del WAF.</li>
+      <li>Optimización de costes se desarrolla en profundidad en el <strong>Dominio 4</strong>.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

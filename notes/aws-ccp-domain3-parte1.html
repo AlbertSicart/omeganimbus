@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 3 · Parte 1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --teal: #39d0d8;
+    --teal-dim: rgba(57,208,216,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.teal   { background: var(--teal-dim);   color: var(--teal);   border: 1px solid rgba(57,208,216,0.3); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* ACCESS METHODS */
+  .methods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .method-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .method-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .method-icon { font-size: 16px; flex-shrink: 0; }
+  .method-name { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .method-body { padding: 10px 14px; }
+  .method-body .what { font-size: 12px; color: #cdd9e5; font-weight: 300; margin-bottom: 5px; }
+  .method-body .best { font-size: 11px; color: var(--muted); font-style: italic; font-weight: 300; }
+
+  .m-console  .method-header { background: var(--blue-dim);   border-bottom-color: rgba(88,166,255,0.2); }
+  .m-console  .method-name   { color: var(--blue); }
+  .m-cli      .method-header { background: var(--green-dim);  border-bottom-color: rgba(63,185,80,0.2); }
+  .m-cli      .method-name   { color: var(--green); }
+  .m-sdk      .method-header { background: var(--purple-dim); border-bottom-color: rgba(188,140,255,0.2); }
+  .m-sdk      .method-name   { color: var(--purple); }
+  .m-iac      .method-header { background: var(--yellow-dim); border-bottom-color: rgba(210,153,34,0.2); }
+  .m-iac      .method-name   { color: var(--yellow); }
+
+  /* CLOUD MODELS */
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+  .model-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .model-card p  { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 300; }
+  .model-card .example { font-size: 11px; color: #cdd9e5; font-style: italic; }
+  .m-public   { border-top: 2px solid var(--blue); }
+  .m-public   h3 { color: var(--blue); }
+  .m-private  { border-top: 2px solid var(--purple); }
+  .m-private  h3 { color: var(--purple); }
+  .m-hybrid   { border-top: 2px solid var(--green); }
+  .m-hybrid   h3 { color: var(--green); }
+  .m-multi    { border-top: 2px solid var(--teal); }
+  .m-multi    h3 { color: var(--teal); }
+
+  /* PUBLIC vs PRIVATE ZONE DIAGRAM */
+  .zone-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .zone-diagram-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .zone-row {
+    display: grid;
+    grid-template-columns: 1fr 20px 1fr 20px 1fr;
+    gap: 0;
+    align-items: center;
+  }
+  .zone-box {
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+  .zone-internet {
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.15);
+  }
+  .zone-internet .zone-label { color: var(--muted); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .zone-internet .zone-content { font-size: 11px; color: var(--muted); }
+
+  .zone-public {
+    background: var(--blue-dim);
+    border: 1px dashed rgba(88,166,255,0.3);
+  }
+  .zone-public .zone-label { color: var(--blue); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .zone-public .zone-content { font-size: 11px; color: #cdd9e5; }
+  .zone-public .zone-example { font-size: 10px; color: var(--blue); margin-top: 4px; font-style: italic; }
+
+  .zone-private {
+    background: var(--purple-dim);
+    border: 1px dashed rgba(188,140,255,0.3);
+  }
+  .zone-private .zone-label { color: var(--purple); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .zone-private .zone-content { font-size: 11px; color: #cdd9e5; }
+  .zone-private .zone-example { font-size: 10px; color: var(--purple); margin-top: 4px; font-style: italic; }
+
+  .zone-arrow {
+    text-align: center;
+    font-size: 16px;
+    color: var(--muted);
+  }
+  .zone-arrow.open { color: var(--blue); }
+  .zone-arrow.blocked { color: var(--red); }
+
+  .zone-note {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* CONNECTIVITY TABLE */
+  .conn-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .conn-table th { background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: 0.05em; text-align: left; }
+  .conn-table td { border: 1px solid var(--border); padding: 9px 12px; vertical-align: top; font-weight: 300; color: #cdd9e5; }
+  .conn-table tr:nth-child(even) td { background: var(--surface); }
+  .conn-table tr:nth-child(odd)  td { background: var(--bg); }
+  .conn-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .methods-grid, .models-grid { grid-template-columns: 1fr; }
+    .zone-row { grid-template-columns: 1fr; }
+    .zone-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 3 — Parte 1</h1>
+    <div class="subtitle">Métodos de acceso · Modelos de despliegue · Zonas público/privado · Conectividad</div>
+  </header>
+
+  <!-- MÉTODOS DE ACCESO -->
+  <section>
+    <div class="section-label">01 · Métodos de acceso y aprovisionamiento</div>
+    <h2>Cómo interactuar con AWS</h2>
+
+    <div class="methods-grid">
+      <div class="method-card m-console">
+        <div class="method-header">
+          <span class="method-icon">🖥️</span>
+          <span class="method-name">Consola de administración AWS</span>
+        </div>
+        <div class="method-body">
+          <div class="what">Interfaz gráfica web. Ideal para exploración, configuración visual y tareas puntuales.</div>
+          <div class="best">Mejor para: aprendizaje, tareas manuales, administración visual, troubleshooting rápido.</div>
+        </div>
+      </div>
+
+      <div class="method-card m-cli">
+        <div class="method-header">
+          <span class="method-icon">⌨️</span>
+          <span class="method-name">AWS CLI</span>
+        </div>
+        <div class="method-body">
+          <div class="what">Interfaz de línea de comandos. Acceso a las APIs de AWS mediante comandos de texto desde terminal.</div>
+          <div class="best">Mejor para: scripts, automatización, tareas repetitivas, pipelines CI/CD.</div>
+        </div>
+      </div>
+
+      <div class="method-card m-sdk">
+        <div class="method-header">
+          <span class="method-icon">🧩</span>
+          <span class="method-name">SDKs (programático)</span>
+        </div>
+        <div class="method-body">
+          <div class="what">Kits de desarrollo para integrar servicios AWS directamente en código (Python, Java, JS, Go…). Acceso a la API vía código.</div>
+          <div class="best">Mejor para: aplicaciones que necesitan interactuar con AWS desde el código fuente.</div>
+        </div>
+      </div>
+
+      <div class="method-card m-iac">
+        <div class="method-header">
+          <span class="method-icon">📐</span>
+          <span class="method-name">IaC — AWS CloudFormation</span>
+        </div>
+        <div class="method-body">
+          <div class="what">Infraestructura como código. Define y despliega recursos AWS mediante plantillas YAML/JSON declarativas.</div>
+          <div class="best">Mejor para: entornos reproducibles, despliegues complejos, control de versiones de infraestructura.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- MODELOS DE DESPLIEGUE -->
+  <section>
+    <div class="section-label">02 · Modelos de despliegue — No confundir</div>
+    <h2>Nube pública · Privada · Híbrida · Multi-cloud</h2>
+
+    <div class="models-grid">
+      <div class="model-card m-public">
+        <h3>☁ Nube pública</h3>
+        <p>Plataforma cloud disponible para cualquier usuario que cumpla los criterios de computación en la nube. Gestionada por un proveedor externo.</p>
+        <div class="example">AWS, Azure, Google Cloud</div>
+      </div>
+
+      <div class="model-card m-private">
+        <h3>🏢 Nube privada</h3>
+        <p>Servicios cloud dedicados exclusivamente a una organización, desplegados en sus propias instalaciones. Debe cumplir los 5 criterios cloud.</p>
+        <div class="example">AWS Outposts, VMware Cloud</div>
+      </div>
+
+      <div class="model-card m-hybrid">
+        <h3>🔗 Nube híbrida</h3>
+        <p>Combinación de nube pública + nube privada (ambas cumplen criterios cloud). <strong>No confundir con entorno híbrido.</strong></p>
+        <div class="example">AWS + AWS Outposts (on-prem con criterios cloud)</div>
+      </div>
+
+      <div class="model-card m-multi">
+        <h3>🌐 Multi-cloud</h3>
+        <p>Uso simultáneo de más de una nube pública. Flexible pero complejo de diseñar y gestionar.</p>
+        <div class="example">AWS + Azure, o AWS + GCP, o los tres</div>
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--red);">
+      <div class="def-title" style="color: var(--red);">⚠ Distinción crítica para el examen</div>
+      <strong>Nube híbrida</strong> = nube pública + nube privada (ambas cumplen criterios cloud).<br>
+      <strong>Entorno híbrido</strong> = AWS + datacenter on-premises tradicional (el datacenter <em>no</em> es una nube privada).<br><br>
+      Si las aplicaciones trabajan conjuntamente entre AWS y un datacenter local → es un <strong>entorno híbrido</strong>, no una nube híbrida.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ZONA PÚBLICA vs PRIVADA -->
+  <section>
+    <div class="section-label">03 · Arquitectura de red AWS</div>
+    <h2>Servicios públicos vs privados en AWS</h2>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:14px;">En AWS, "público" y "privado" hacen referencia a la <strong>red</strong>, no a quién tiene acceso. Es una distinción de conectividad, no de permisos.</p>
+
+    <div class="zone-diagram">
+      <div class="zone-diagram-title">Zonas de red en AWS</div>
+      <div class="zone-row">
+        <div class="zone-box zone-internet">
+          <div class="zone-label">Internet pública</div>
+          <div class="zone-content">Tráfico abierto global</div>
+        </div>
+        <div class="zone-arrow open">⟷</div>
+        <div class="zone-box zone-public">
+          <div class="zone-label">Zona pública AWS</div>
+          <div class="zone-content">Conectada a internet pública</div>
+          <div class="zone-example">Amazon S3, CloudFront, API Gateway</div>
+        </div>
+        <div class="zone-arrow blocked">✕</div>
+        <div class="zone-box zone-private">
+          <div class="zone-label">Zona privada AWS</div>
+          <div class="zone-content">Sin conexión directa a internet</div>
+          <div class="zone-example">Amazon VPC, EC2 (por defecto), RDS</div>
+        </div>
+      </div>
+      <div class="zone-note">
+        La zona privada puede conectarse a la zona pública o a internet si se configura explícitamente (Internet Gateway, NAT Gateway, etc.). Por defecto está completamente aislada.
+      </div>
+    </div>
+
+    <div class="def" style="border-left-color: var(--blue);">
+      <div class="def-title" style="color: var(--blue);">Servicio público vs privado de AWS</div>
+      <strong>Servicio público</strong> (ej. S3): accesible desde cualquier lugar con internet. Se encuentra en la zona pública de AWS.<br>
+      <strong>Servicio privado</strong> (ej. EC2 en VPC): aislado por defecto. Sin acceso a internet ni a la zona pública salvo configuración explícita.<br><br>
+      La zona pública de AWS <strong>no es internet</strong>: es una red propia de AWS adyacente a internet.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- CONECTIVIDAD -->
+  <section>
+    <div class="section-label">04 · Opciones de conectividad</div>
+    <h2>Internet pública · VPN · Direct Connect · Gateways</h2>
+
+    <table class="conn-table">
+      <thead>
+        <tr>
+          <th>Método</th>
+          <th>Tipo</th>
+          <th>Características</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="conn-name">Internet pública</span></td>
+          <td><span class="badge blue">Pública</span></td>
+          <td>Acceso estándar a servicios AWS públicos vía HTTP/S.</td>
+          <td>Acceso general a servicios públicos como S3 o APIs.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name">AWS VPN</span></td>
+          <td><span class="badge yellow">Cifrada</span></td>
+          <td>Túnel cifrado sobre internet pública entre red on-premises y VPC.</td>
+          <td>Conectar datacenter local a AWS de forma segura y económica.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name">AWS Direct Connect</span></td>
+          <td><span class="badge purple">Privada dedicada</span></td>
+          <td>Conexión física dedicada y privada. No pasa por internet pública. Latencia predecible y consistente.</td>
+          <td>Cargas de trabajo críticas con requisitos de ancho de banda alto, baja latencia o conformidad estricta.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name">Internet Gateway (IGW)</span></td>
+          <td><span class="badge blue">VPC → Internet</span></td>
+          <td>Puerta de enlace redundante y altamente disponible. Permite a instancias públicas en VPC comunicarse con internet.</td>
+          <td>Conectar subredes públicas de una VPC a internet pública.</td>
+        </tr>
+        <tr>
+          <td><span class="conn-name">NAT Gateway</span></td>
+          <td><span class="badge green">Privado → Internet</span></td>
+          <td>Permite a instancias en subredes <strong>privadas</strong> iniciar conexiones salientes a internet, sin exponer su IP.</td>
+          <td>Instancias privadas que necesitan acceso a internet (actualizaciones, etc.) sin ser accesibles desde fuera.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--purple);">
+      <div class="def-title" style="color: var(--purple);">Pregunta de examen frecuente</div>
+      <strong>"¿Qué usas para conectar instancias EC2 en una subred pública a internet?"</strong><br>
+      → <strong>Internet Gateway (IGW)</strong>. Redundante, se escala horizontalmente, permite tráfico bidireccional entre VPC e internet.<br><br>
+      <strong>IGW vs NAT Gateway</strong>: IGW es para subredes públicas (tráfico bidireccional). NAT Gateway es para subredes privadas (solo tráfico de salida iniciado desde dentro).
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>Consola</strong> = visual/manual. <strong>CLI</strong> = scripts/automatización. <strong>SDK</strong> = desde código. <strong>CloudFormation</strong> = IaC declarativo.</li>
+      <li><strong>Nube híbrida ≠ entorno híbrido.</strong> Híbrida = pública + privada (ambas cloud). Híbrido = AWS + datacenter tradicional.</li>
+      <li><strong>AWS Outposts</strong> = nube privada on-premises de AWS. Cumple criterios cloud, dedicado a tu empresa.</li>
+      <li>Servicio <strong>público</strong> de AWS (S3) = accesible desde internet. Servicio <strong>privado</strong> (EC2 en VPC) = aislado por defecto.</li>
+      <li><strong>Direct Connect</strong> = conexión <strong>privada dedicada</strong>. No pasa por internet. Baja latencia, predecible.</li>
+      <li><strong>Internet Gateway</strong> = subred pública ↔ internet (bidireccional).</li>
+      <li><strong>NAT Gateway</strong> = subred privada → internet (solo salida). Las instancias privadas no son accesibles desde fuera.</li>
+      <li>La zona pública de AWS <strong>no es internet</strong>: es la red interna de AWS con conectividad hacia internet.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

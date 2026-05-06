@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS CCP — Dominio 2 · Parte 1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
+    --green: #3fb950;
+    --green-dim: rgba(63,185,80,0.10);
+    --yellow: #d29922;
+    --yellow-dim: rgba(210,153,34,0.12);
+    --red: #f85149;
+    --red-dim: rgba(248,81,73,0.10);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.10);
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.65;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 36px; }
+  .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 26px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 13px; font-weight: 300; margin-top: 4px; }
+
+  section { margin-bottom: 32px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  p { color: #cdd9e5; margin-bottom: 8px; font-weight: 300; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .def { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+  .def-title { font-family: var(--mono); font-size: 11px; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+
+  /* RESPONSIBILITY STACK */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  .stack-layer {
+    border-radius: 5px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+  }
+  .stack-layer .owner {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .stack-layer .layer-name {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    flex: 1;
+  }
+  .stack-layer .layer-detail {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* AWS layers */
+  .aws-layer { background: var(--blue-dim); border-color: rgba(88,166,255,0.2); }
+  .aws-layer .owner { background: rgba(88,166,255,0.15); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+
+  /* Shared layer */
+  .shared-layer { background: var(--purple-dim); border-color: rgba(188,140,255,0.2); }
+  .shared-layer .owner { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+
+  /* Customer layers */
+  .customer-layer { background: var(--green-dim); border-color: rgba(63,185,80,0.2); }
+  .customer-layer .owner { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+
+  /* DIVIDER LABEL */
+  .stack-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0;
+  }
+  .stack-divider .line { flex: 1; height: 1px; background: var(--border); }
+  .stack-divider .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* RESPONSIBILITY SPLIT */
+  .resp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .resp-card {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .resp-card-header {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .resp-card.aws .resp-card-header  { background: var(--blue-dim); color: var(--blue); border-bottom: 1px solid rgba(88,166,255,0.2); }
+  .resp-card.cust .resp-card-header { background: var(--green-dim); color: var(--green); border-bottom: 1px solid rgba(63,185,80,0.2); }
+  .resp-card ul { list-style: none; padding: 0; }
+  .resp-card li { font-size: 12px; color: #cdd9e5; padding: 7px 14px; border-bottom: 1px solid var(--border); font-weight: 300; }
+  .resp-card li:last-child { border: none; }
+  .resp-card.aws  li::before { content: '☁ '; color: var(--blue); font-size: 10px; }
+  .resp-card.cust li::before { content: '👤 '; font-size: 10px; }
+
+  /* MANAGED vs UNMANAGED */
+  .service-compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+  .service-compare th {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-align: left;
+  }
+  .service-compare td {
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    vertical-align: top;
+    font-weight: 300;
+    color: #cdd9e5;
+  }
+  .service-compare tr:nth-child(even) td { background: var(--surface); }
+  .service-compare tr:nth-child(odd) td { background: var(--bg); }
+  .svc-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 10px; }
+  .badge.aws    { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.cust   { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .badge.shared { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .badge.mgd    { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(88,166,255,0.3); }
+  .badge.self   { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+
+  /* EXAM TIP */
+  .exam-tip { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; padding: 14px 16px; margin-top: 20px; }
+  .exam-tip-header { font-family: var(--mono); font-size: 10px; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .exam-tip ul { list-style: none; padding: 0; }
+  .exam-tip li { font-size: 13px; color: #cdd9e5; padding: 5px 0; border-bottom: 1px solid rgba(249,115,22,0.15); font-weight: 300; }
+  .exam-tip li:last-child { border: none; }
+  .exam-tip li::before { content: '→ '; color: var(--orange); font-family: var(--mono); }
+  .exam-tip strong { color: var(--orange); font-weight: 600; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { margin: 0; }
+  }
+  @page { margin: 10mm; size: auto; }
+
+  @media (max-width: 600px) {
+    .resp-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="breadcrumb">AWS Certified Cloud Practitioner · CLF-C02</div>
+    <h1>Dominio 2 — Parte 1</h1>
+    <div class="subtitle">Modelo de Responsabilidad Compartida · Seguridad DE la nube vs EN la nube</div>
+  </header>
+
+  <!-- DEFINICIÓN -->
+  <section>
+    <div class="section-label">01 · Definición</div>
+    <h2>¿Qué es el Modelo de Responsabilidad Compartida?</h2>
+    <div class="def">
+      <div class="def-title">Shared Responsibility Model</div>
+      Marco que define qué áreas de seguridad pertenecen a <strong>AWS</strong> y cuáles son responsabilidad del <strong>cliente</strong>. La regla general es:<br><br>
+      <strong style="color: var(--blue);">AWS</strong> es responsable de la seguridad <strong style="color: var(--blue);">DE</strong> la nube (infraestructura física, hardware, hipervisor).<br>
+      <strong style="color: var(--green);">El cliente</strong> es responsable de la seguridad <strong style="color: var(--green);">EN</strong> la nube (datos, apps, configuración, acceso).
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- STACK DE RESPONSABILIDADES -->
+  <section>
+    <div class="section-label">02 · Capas de responsabilidad</div>
+    <h2>Modelo de capas — quién gestiona qué</h2>
+
+    <div class="stack">
+      <!-- Customer top -->
+      <div class="stack-layer customer-layer">
+        <span class="owner">CLIENTE</span>
+        <span class="layer-name">Datos del cliente</span>
+        <span class="layer-detail">Protección, backups, clasificación</span>
+      </div>
+      <div class="stack-layer customer-layer">
+        <span class="owner">CLIENTE</span>
+        <span class="layer-name">Aplicaciones · IAM · Gestión de acceso</span>
+        <span class="layer-detail">Código, permisos, usuarios, roles</span>
+      </div>
+      <div class="stack-layer customer-layer">
+        <span class="owner">CLIENTE</span>
+        <span class="layer-name">Sistema operativo · Red · Firewall</span>
+        <span class="layer-detail">Parches del SO, security groups, NACLs</span>
+      </div>
+      <div class="stack-layer customer-layer">
+        <span class="owner">CLIENTE</span>
+        <span class="layer-name">Cifrado de datos (cliente y servidor) · TLS</span>
+        <span class="layer-detail">Cifrado en tránsito y en reposo, certificados SSL</span>
+      </div>
+
+      <div class="stack-divider">
+        <div class="line"></div>
+        <div class="label">↑ Responsabilidad del cliente · Responsabilidad de AWS ↓</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- AWS layers -->
+      <div class="stack-layer aws-layer">
+        <span class="owner">AWS</span>
+        <span class="layer-name">Software de plataforma (hipervisor, UI de servicios)</span>
+        <span class="layer-detail">EC2 hypervisor, RDS engine patches, consola…</span>
+      </div>
+      <div class="stack-layer aws-layer">
+        <span class="owner">AWS</span>
+        <span class="layer-name">Computación · Almacenamiento · Red · Bases de datos</span>
+        <span class="layer-detail">Servicios administrados y su infraestructura subyacente</span>
+      </div>
+      <div class="stack-layer aws-layer">
+        <span class="owner">AWS</span>
+        <span class="layer-name">Infraestructura global (Regiones · AZ · Edge Locations)</span>
+        <span class="layer-detail">Hardware físico, centros de datos, redes troncales</span>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- RESPONSABILIDADES DETALLADAS -->
+  <section>
+    <div class="section-label">03 · Detalle de responsabilidades</div>
+    <h2>AWS vs Cliente — ¿Quién hace qué?</h2>
+    <div class="resp-grid">
+      <div class="resp-card aws">
+        <div class="resp-card-header">☁ AWS — Seguridad DE la nube</div>
+        <ul>
+          <li>Seguridad física de los centros de datos</li>
+          <li>Hardware: servidores, switches, routers</li>
+          <li>Infraestructura de red global</li>
+          <li>Hipervisores y virtualización</li>
+          <li>Parches del motor de BD en RDS</li>
+          <li>Parches del SO en Lambda, ECS (Fargate)</li>
+          <li>Disponibilidad y durabilidad de S3, DynamoDB</li>
+          <li>Certificaciones de conformidad (ISO, SOC, PCI)</li>
+        </ul>
+      </div>
+      <div class="resp-card cust">
+        <div class="resp-card-header">👤 Cliente — Seguridad EN la nube</div>
+        <ul>
+          <li>Sistema operativo en instancias EC2 (parches)</li>
+          <li>Configuración de security groups y NACLs</li>
+          <li>Gestión de identidades y accesos (IAM)</li>
+          <li>Cifrado de datos en reposo y en tránsito</li>
+          <li>Protección de datos de clientes</li>
+          <li>Backups y recuperación de datos propios</li>
+          <li>Código y configuración de las aplicaciones</li>
+          <li>Gestión de claves de cifrado (KMS)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- SERVICIOS ADMINISTRADOS VS NO ADMINISTRADOS -->
+  <section>
+    <div class="section-label">04 · Clave para el examen</div>
+    <h2>Responsabilidad según tipo de servicio</h2>
+    <p style="font-size:12px; color: var(--muted); margin-bottom: 12px;">La responsabilidad del cliente <strong>varía según si el servicio es administrado o no.</strong> A más gestión por parte de AWS, menos responsabilidad para el cliente.</p>
+
+    <table class="service-compare">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Tipo</th>
+          <th>Parches SO / Motor BD</th>
+          <th>Configuración de red</th>
+          <th>Datos y acceso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="svc-name">Amazon EC2</span></td>
+          <td><span class="badge self">No administrado</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+        </tr>
+        <tr>
+          <td><span class="svc-name">Amazon RDS</span></td>
+          <td><span class="badge mgd">Administrado</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge shared">Compartido</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+        </tr>
+        <tr>
+          <td><span class="svc-name">Amazon DynamoDB</span></td>
+          <td><span class="badge mgd">Totalmente administrado</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+        </tr>
+        <tr>
+          <td><span class="svc-name">AWS Lambda</span></td>
+          <td><span class="badge mgd">Serverless</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+        </tr>
+        <tr>
+          <td><span class="svc-name">Amazon S3</span></td>
+          <td><span class="badge mgd">Totalmente administrado</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge aws">AWS</span></td>
+          <td><span class="badge cust">Cliente</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="def" style="border-left-color: var(--purple);">
+      <div class="def-title" style="color: var(--purple);">Regla práctica</div>
+      <strong>¿Es un servicio administrado?</strong> → AWS gestiona la infraestructura subyacente, el SO y los parches del motor. El cliente solo gestiona datos, acceso y configuración de la app.<br><br>
+      <strong>¿Es EC2 u otro servicio IaaS?</strong> → El cliente es responsable de todo lo que está dentro de la instancia: SO, parches, firewall, aplicación.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- EXAM TIPS -->
+  <div class="exam-tip">
+    <div class="exam-tip-header">▲ Exam Tips — Puntos clave</div>
+    <ul>
+      <li><strong>AWS = seguridad DE la nube.</strong> Cliente = seguridad EN la nube. Esta distinción es la base de todo.</li>
+      <li><strong>¿Quién parchea el motor de MySQL en RDS?</strong> → AWS. ¿Y en EC2 con MySQL instalado? → El cliente.</li>
+      <li><strong>¿Quién protege los centros de datos físicos?</strong> → Siempre AWS. El cliente no tiene acceso ni control.</li>
+      <li>El cliente <strong>siempre</strong> es responsable de sus datos, IAM, cifrado y backups, independientemente del servicio.</li>
+      <li>A mayor nivel de abstracción del servicio (Lambda > RDS > EC2), <strong>menor responsabilidad del cliente</strong> sobre la infraestructura.</li>
+      <li>Conocer el modelo para: <strong>EC2, RDS, DynamoDB, Lambda y S3</strong> — los más preguntados en el examen.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
