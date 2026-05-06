@@ -576,13 +576,16 @@ All services remain within the AWS Free Tier:
 
 ### What's Next
 
-| Feature | AWS Services | Certification relevance |
+| Feature | AWS Services | Priority |
 |---|---|---|
-| GuardDuty findings dashboard | Lambda + API Gateway + EventBridge | SCS-C02 |
-| Automated security alerts | EventBridge + SNS | SCS-C02 |
-| Study Notes section | S3 + CloudFront | Portfolio |
-| RDS + ElastiCache | Relational database layer | SAA-C03 |
-| WAF integration | AWS WAF + CloudFront | SCS-C02 |
+| GuardDuty findings dashboard | Lambda + API Gateway + EventBridge | High |
+| Automated security alerts | EventBridge + SNS | High |
+| Study Notes section | S3 + CloudFront | Medium |
+| Chatbot | Amazon Lex | Medium |
+| Image recognition demo | Amazon Rekognition | Medium |
+| RDS + ElastiCache | Relational database layer | Low |
+| WAF integration | AWS WAF + CloudFront | Low |
+
 
 ---
 
