@@ -311,6 +311,46 @@
       border-left: 2px solid var(--red);
     }
 
+    /* ─── AI DESCRIPTION ─── */
+    .ai-description {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--red);
+      padding: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--white);
+      line-height: 1.8;
+      font-style: italic;
+    }
+
+    .ai-description-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.75rem;
+      font-style: normal;
+    }
+
+    /* ─── RESET BUTTON ─── */
+    .reset-btn {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .reset-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .reset-btn.visible { display: block; }
+
     /* ─── LOADING ─── */
     .analyzing-state {
       display: none;
@@ -445,6 +485,7 @@
       <img class="image-preview" id="image-preview" alt="Preview" />
       <p class="file-info" id="file-info"></p>
       <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">→ Analyze Image</button>
+      <button class="reset-btn" id="reset-btn" onclick="resetImage()">↺ Upload new image</button>
     </div>
 
     <!-- RESULTS PANEL -->
@@ -561,6 +602,7 @@
           document.getElementById('results-content').innerHTML = `<p class="results-empty" style="color:var(--red-hot)">${data.error}</p>`;
         } else {
           renderResults(data);
+          document.getElementById('reset-btn').classList.add('visible');
         }
 
       } catch (err) {
@@ -574,8 +616,20 @@
 
     // ─── RENDER RESULTS ───
     function renderResults(data) {
-      const { labels, text, faces } = data;
+      const { labels, text, faces, description } = data;
       let html = '';
+
+      // AI Description
+      if (description) {
+        html += `
+          <div class="result-section">
+            <p class="result-section-title">// AI Description</p>
+            <div class="ai-description">
+              <p class="ai-description-label">// Claude Haiku 4.5 via Amazon Bedrock</p>
+              ${description}
+            </div>
+          </div>`;
+      }
 
       // Labels
       if (labels && labels.length > 0) {
@@ -617,6 +671,21 @@
       }
 
       document.getElementById('results-content').innerHTML = html;
+    }
+
+    // ─── RESET ───
+    function resetImage() {
+      currentImageBase64 = null;
+      imagePreview.src = '';
+      imagePreview.classList.remove('visible');
+      analyzeBtn.classList.remove('visible');
+      analyzeBtn.textContent = '→ Analyze Image';
+      fileInfo.classList.remove('visible');
+      fileInfo.textContent = '';
+      document.getElementById('reset-btn').classList.remove('visible');
+      dropZone.style.display = '';
+      document.getElementById('results-content').innerHTML = '<p class="results-empty">Waiting for image input</p>';
+      fileInput.value = '';
     }
   </script>
 
