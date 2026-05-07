@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmegaNimbus — Image Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #05070d;
+      --deep:    #0a0d17;
+      --surface: #0f1220;
+      --card:    #131724;
+      --border:  rgba(255,255,255,0.06);
+      --red:     #c0392b;
+      --red-hot: #e74c3c;
+      --white:   #f0f0f0;
+      --muted:   #6b7280;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(5,7,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav ul a:hover, nav ul a.active { color: var(--white); }
+
+    /* ─── HERO ─── */
+    .page-hero {
+      padding: 8rem 3rem 4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+    .page-title {
+      font-family: var(--display);
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .page-title span { color: var(--red); }
+    .page-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.8;
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .analyzer-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 70vh;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ─── DROP ZONE ─── */
+    .drop-panel {
+      border-right: 1px solid var(--border);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .drop-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+
+    .drop-zone {
+      border: 1px dashed rgba(192,57,43,0.4);
+      background: rgba(192,57,43,0.03);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      min-height: 300px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--red);
+      background: rgba(192,57,43,0.06);
+    }
+
+    .drop-icon {
+      font-size: 2rem;
+      opacity: 0.4;
+    }
+
+    .drop-text {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .drop-subtext {
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* ─── IMAGE PREVIEW ─── */
+    .image-preview {
+      display: none;
+      width: 100%;
+      height: 300px;
+      object-fit: contain;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .image-preview.visible { display: block; }
+
+    .analyze-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: none;
+    }
+    .analyze-btn:hover { background: var(--red-hot); }
+    .analyze-btn.visible { display: block; }
+    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .file-info {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      display: none;
+    }
+    .file-info.visible { display: block; }
+
+    /* ─── RESULTS PANEL ─── */
+    .results-panel {
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .results-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+
+    .results-empty {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      padding: 4rem 0;
+      text-align: center;
+    }
+    .results-empty::before { content: '// '; color: var(--red); }
+
+    /* ─── RESULT SECTIONS ─── */
+    .result-section { margin-bottom: 2rem; }
+
+    .result-section-title {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ─── LABELS ─── */
+    .labels-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .label-tag {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--border);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .label-tag::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: var(--red);
+      opacity: 0.15;
+      width: var(--conf);
+    }
+
+    .label-confidence {
+      font-size: 0.5rem;
+      color: var(--muted);
+      margin-left: 0.4rem;
+    }
+
+    /* ─── FACES ─── */
+    .faces-count {
+      font-family: var(--display);
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 1;
+    }
+    .faces-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ─── TEXT ─── */
+    .text-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .text-item {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--white);
+      background: var(--surface);
+      padding: 0.5rem 0.75rem;
+      border-left: 2px solid var(--red);
+    }
+
+    /* ─── LOADING ─── */
+    .analyzing-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 0;
+      gap: 1.5rem;
+    }
+    .analyzing-state.visible { display: flex; }
+
+    .scan-line {
+      width: 120px;
+      height: 1px;
+      background: var(--red);
+      animation: scan 1.5s ease-in-out infinite;
+    }
+    @keyframes scan {
+      0% { transform: scaleX(0); opacity: 0; }
+      50% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(0); opacity: 0; }
+    }
+
+    .analyzing-text {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      text-transform: uppercase;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ─── INFO CARDS ─── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin: 0 3rem 3rem;
+    }
+    .info-card {
+      background: var(--card);
+      padding: 2rem;
+    }
+    .info-card-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .info-card-title {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .info-card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--white); }
+
+    @media (max-width: 768px) {
+      .analyzer-layout { grid-template-columns: 1fr; }
+      .drop-panel { border-right: none; border-bottom: 1px solid var(--border); }
+      .info-grid { grid-template-columns: 1fr; margin: 0 1.5rem 2rem; }
+      nav { padding: 1.25rem 1.5rem; }
+      .page-hero { padding: 7rem 1.5rem 3rem; }
+      nav ul { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">OMEGA<span>NIMBUS</span></a>
+    <ul>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#portfolio">Projects</a></li>
+      <li><a href="index.html#blog">Writeups</a></li>
+      <li><a href="security.html">SecOps</a></li>
+      <li><a href="notes.html">Notes</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <p class="page-eyebrow">// Computer Vision · AWS Rekognition</p>
+    <h1 class="page-title">IMAGE<br><span>ANALYSIS</span></h1>
+    <p class="page-desc">
+      Upload an image and let AWS Rekognition detect objects, labels, text, and faces in real time. Powered by Lambda + API Gateway.
+    </p>
+  </div>
+
+  <!-- ANALYZER -->
+  <div class="analyzer-layout">
+
+    <!-- DROP PANEL -->
+    <div class="drop-panel">
+      <p class="drop-label">// Input</p>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" />
+        <div class="drop-icon">⬡</div>
+        <p class="drop-text">Drop image here</p>
+        <p class="drop-subtext">or click to browse · JPG, PNG, WEBP · max 5MB</p>
+      </div>
+
+      <img class="image-preview" id="image-preview" alt="Preview" />
+      <p class="file-info" id="file-info"></p>
+      <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">→ Analyze Image</button>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel" id="results-panel">
+      <p class="results-label">// Output</p>
+
+      <div class="analyzing-state" id="analyzing-state">
+        <div class="scan-line"></div>
+        <p class="analyzing-text">Analyzing...</p>
+      </div>
+
+      <div id="results-content">
+        <p class="results-empty">Waiting for image input</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INFO CARDS -->
+  <div class="info-grid">
+    <div class="info-card">
+      <p class="info-card-label">// Object Detection</p>
+      <h3 class="info-card-title">Label Detection</h3>
+      <p class="info-card-desc">Rekognition identifies thousands of objects, scenes, and concepts with confidence scores from 0–100%.</p>
+    </div>
+    <div class="info-card">
+      <p class="info-card-label">// Face Analysis</p>
+      <h3 class="info-card-title">Face Detection</h3>
+      <p class="info-card-desc">Detects faces and analyzes attributes including age range, emotions, gender, and facial features.</p>
+    </div>
+    <div class="info-card">
+      <p class="info-card-label">// OCR</p>
+      <h3 class="info-card-title">Text Extraction</h3>
+      <p class="info-card-desc">Reads printed and handwritten text from images using machine learning optical character recognition.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>OMEGANIMBUS · <a href="index.html">omeganimbus.com</a></p>
+    <p>AWS Rekognition · Lambda · API Gateway</p>
+  </footer>
+
+  <script>
+    const API_ENDPOINT = 'https://judzwkiy9h.execute-api.eu-north-1.amazonaws.com/analyze';
+    let currentImageBase64 = null;
+
+    // ─── FILE INPUT ───
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const imagePreview = document.getElementById('image-preview');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const fileInfo = document.getElementById('file-info');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) handleFile(file);
+    });
+
+    function handleFile(file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be under 5MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentImageBase64 = e.target.result;
+        imagePreview.src = currentImageBase64;
+        imagePreview.classList.add('visible');
+        analyzeBtn.classList.add('visible');
+        fileInfo.textContent = `// ${file.name} · ${(file.size / 1024).toFixed(0)} KB · ${file.type}`;
+        fileInfo.classList.add('visible');
+        dropZone.style.display = 'none';
+        document.getElementById('results-content').innerHTML = '<p class="results-empty">Ready — click Analyze</p>';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ─── ANALYZE ───
+    async function analyzeImage() {
+      if (!currentImageBase64) return;
+
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '// Processing...';
+      document.getElementById('analyzing-state').classList.add('visible');
+      document.getElementById('results-content').innerHTML = '';
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: currentImageBase64 })
+        });
+
+        const data = await res.json();
+
+        document.getElementById('analyzing-state').classList.remove('visible');
+
+        if (data.error) {
+          document.getElementById('results-content').innerHTML = `<p class="results-empty" style="color:var(--red-hot)">${data.error}</p>`;
+        } else {
+          renderResults(data);
+        }
+
+      } catch (err) {
+        document.getElementById('analyzing-state').classList.remove('visible');
+        document.getElementById('results-content').innerHTML = `<p class="results-empty" style="color:var(--red-hot)">// Error: ${err.message}</p>`;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '→ Analyze Again';
+      }
+    }
+
+    // ─── RENDER RESULTS ───
+    function renderResults(data) {
+      const { labels, text, faces } = data;
+      let html = '';
+
+      // Labels
+      if (labels && labels.length > 0) {
+        const tags = labels.map(l => {
+          const conf = l.confidence;
+          return `<div class="label-tag" style="--conf:${conf}%">
+            ${l.name}<span class="label-confidence">${conf}%</span>
+          </div>`;
+        }).join('');
+        html += `
+          <div class="result-section">
+            <p class="result-section-title">// Labels detected (${labels.length})</p>
+            <div class="labels-grid">${tags}</div>
+          </div>`;
+      }
+
+      // Faces
+      html += `
+        <div class="result-section">
+          <p class="result-section-title">// Face detection</p>
+          <div class="faces-count">${faces}</div>
+          <p class="faces-label">${faces === 1 ? 'face detected' : 'faces detected'}</p>
+        </div>`;
+
+      // Text
+      if (text && text.length > 0) {
+        const items = text.map(t => `<div class="text-item">${t}</div>`).join('');
+        html += `
+          <div class="result-section">
+            <p class="result-section-title">// Text extracted (${text.length} lines)</p>
+            <div class="text-list">${items}</div>
+          </div>`;
+      } else {
+        html += `
+          <div class="result-section">
+            <p class="result-section-title">// Text extraction</p>
+            <p style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em">// No text detected</p>
+          </div>`;
+      }
+
+      document.getElementById('results-content').innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>
