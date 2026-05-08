@@ -9,32 +9,32 @@
 ## Completed
 
 ### Day 1 — Static Hosting + CDN + TLS ✅
-*May 2026*
+*May 2026, 1st*
 
 S3 static website hosting, CloudFront distribution with custom domain, ACM certificate (us-east-1), HTTPS redirect, SES identity verification, Lambda + API Gateway contact form.
 
 ### Day 2 — IAM, DynamoDB & CI/CD Pipeline ✅
-*May 2026*
+*May 2026, 2nd*
 
 IAM least privilege roles for each Lambda, DynamoDB visitor counter, CodePipeline connected to GitHub via GitHub App. Deploy time: ~7 seconds per push.
 
 ### Day 3 — Security Monitoring & Infrastructure as Code ✅
-*May 2026*
+*May 2026, 3rd*
 
 GuardDuty enabled, CloudTrail with KMS encryption, Security Hub with AWS Foundational Security Best Practices + CIS AWS Foundations. Full stack migrated to CloudFormation (15 resources managed as code).
 
 ### Day 4 — Automated Alerting & Threat Dashboard ✅
-*May 2026*
+*May 2026, 4th*
 
 EventBridge rule triggering SNS email alerts on GuardDuty findings (severity ≥ 4). Real-time GuardDuty dashboard on `security.html` — Lambda + API Gateway querying findings live.
 
 ### Day 5 — Computer Vision & AI Image Analysis ✅
-*May 2026*
+*May 2026, 5th*
 
 Rekognition pipeline (detect_labels, detect_text, detect_faces) + Amazon Bedrock Claude Haiku 4.5 for AI-generated image descriptions. Live at `omeganimbus.com/rekognition.html`.
 
 ### Day 6 — Conversational AI Assistant ✅
-*May 2026*
+*May 2026, 6th*
 
 Amazon Lex V2 bot with 6 custom intents covering skills, projects, certifications, and contact. Lambda handler invoking Lex runtime, `POST /chat` endpoint on existing API Gateway. Floating chat widget integrated across all portfolio pages.
 
