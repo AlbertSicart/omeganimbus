@@ -1529,6 +1529,8 @@ async function loadWriteups() {
     });
 
     grid.innerHTML = cards.join('');
+    // Re-observe newly added reveal elements
+    grid.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   } catch (err) {
     grid.innerHTML = '<div class="blog-card featured reveal"><p class="blog-category">// Error loading writeups</p></div>';
   }
