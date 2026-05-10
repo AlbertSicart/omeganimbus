@@ -335,6 +335,7 @@
 
     .state-error { color: var(--red-hot); }
 
+    
     /* ─── INFO CARDS ─── */
     .info-grid {
       display: grid;
@@ -513,6 +514,53 @@
       </div>
     </div>
 
+    <!-- ─── WAF + SHIELD ─── -->
+    <div style="margin-top: 3rem;">
+      <div class="section-header">
+        <div>
+          <p class="section-label">// Web Application Firewall</p>
+          <h2 class="section-title">WAF + Shield</h2>
+          <p class="last-updated" id="waf-updated">Fetching WAF metrics...</p>
+        </div>
+      </div>
+    
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border);">
+        
+        <!-- Allowed requests -->
+        <div style="background: var(--card); padding: 2rem;">
+          <p style="font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.75rem;">// Allowed · 24h</p>
+          <div style="font-family: var(--display); font-size: 2.5rem; color: #2ecc71; line-height: 1;" id="waf-allowed">—</div>
+          <p style="font-family: var(--mono); font-size: 0.6rem; color: var(--muted); margin-top: 0.5rem;">Requests passed by WAF</p>
+        </div>
+    
+        <!-- Blocked requests -->
+        <div style="background: var(--card); padding: 2rem;">
+          <p style="font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.75rem;">// Blocked · 24h</p>
+          <div style="font-family: var(--display); font-size: 2.5rem; color: #e74c3c; line-height: 1;" id="waf-blocked">—</div>
+          <p style="font-family: var(--mono); font-size: 0.6rem; color: var(--muted); margin-top: 0.5rem;">Requests blocked by rules</p>
+        </div>
+    
+        <!-- Shield Standard -->
+        <div style="background: var(--card); padding: 2rem; border-left: 1px solid var(--border);">
+          <p style="font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.25em; color: var(--red); text-transform: uppercase; margin-bottom: 0.75rem;">// Shield Standard</p>
+          <div style="font-family: var(--display); font-size: 1.4rem; color: #2ecc71; line-height: 1; margin-bottom: 0.5rem;">● ACTIVE</div>
+          <p style="font-family: var(--mono); font-size: 0.6rem; color: var(--muted); line-height: 1.6;">DDoS L3/L4 protection<br>CloudFront · Route 53<br>Auto-mitigated · Always on</p>
+        </div>
+      </div>
+    
+      <!-- WAF Rules -->
+      <div style="background: var(--card); border: 1px solid var(--border); border-top: none; padding: 1.5rem 2rem;">
+        <p style="font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; margin-bottom: 1rem;">// Active Rules — omeganimbus-waf</p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <span style="font-family: var(--mono); font-size: 0.6rem; padding: 0.25rem 0.75rem; border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; background: rgba(46,204,113,0.05);">AWS-CRS · OWASP Top 10</span>
+          <span style="font-family: var(--mono); font-size: 0.6rem; padding: 0.25rem 0.75rem; border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; background: rgba(46,204,113,0.05);">Known Bad Inputs</span>
+          <span style="font-family: var(--mono); font-size: 0.6rem; padding: 0.25rem 0.75rem; border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; background: rgba(46,204,113,0.05);">Amazon IP Reputation List</span>
+          <span style="font-family: var(--mono); font-size: 0.6rem; padding: 0.25rem 0.75rem; border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; background: rgba(46,204,113,0.05);">Rate Limit · 1000 req/5min</span>
+        </div>
+      </div>
+    </div>
+
+    
     <!-- INFO CARDS -->
     <div class="info-grid">
       <div class="info-card">
@@ -621,6 +669,25 @@
         </table>
       `;
     }
+    
+    const WAF_ENDPOINT = 'https://judzwkiy9h.execute-api.eu-north-1.amazonaws.com/waf';
+    
+    async function loadWafMetrics() {
+      try {
+        const res = await fetch(WAF_ENDPOINT);
+        const data = await res.json();
+        document.getElementById('waf-allowed').textContent = data.allowed.toLocaleString();
+        document.getElementById('waf-blocked').textContent = data.blocked.toLocaleString();
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+        document.getElementById('waf-updated').textContent = `// Last updated: ${now} UTC`;
+      } catch (err) {
+        document.getElementById('waf-allowed').textContent = '—';
+        document.getElementById('waf-blocked').textContent = '—';
+        document.getElementById('waf-updated').textContent = '// Error fetching WAF metrics';
+      }
+    }
+    
+    loadWafMetrics();
 
     async function loadFindings() {
       const container = document.getElementById('findings-container');
@@ -645,6 +712,7 @@
       }
     }
 
+    
     // Load on page init
     loadFindings();
   </script>
