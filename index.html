@@ -128,6 +128,58 @@
     .nav-links a:hover { color: var(--white); }
     .nav-links a:hover::after { width: 100%; }
 
+    /* ─── NAV DROPDOWN ─── */
+.nav-dropdown {
+  position: relative;
+}
+.nav-dropdown > a {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.nav-dropdown > a::after {
+  content: '▾';
+  font-size: 0.6rem;
+  transition: transform 0.2s;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+  background: none !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+.nav-dropdown:hover > a::after { transform: rotate(180deg); }
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5,7,13,0.97);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0;
+  min-width: 140px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 200;
+}
+.nav-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  pointer-events: all;
+}
+.dropdown-menu a {
+  display: block;
+  padding: 0.5rem 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.dropdown-menu a:hover { color: var(--white); }
+
     /* ─── HERO ─── */
     #hero {
       min-height: 100vh;
@@ -754,12 +806,15 @@
     <a href="#hero" class="nav-logo">OMEGA<span>NIMBUS</span></a>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
-      <li><a href="#portfolio">Projects</a></li>
-      <li><a href="#blog">Writeups</a></li>
       <li><a href="security.html">SecOps</a></li>
       <li><a href="rekognition.html">Analyze</a></li>
-      <li><a href="notes.html">Notes</a></li>
-      <li><a href="#contact">Contact</a></li>
+      <li class="nav-dropdown">
+        <a href="#">Notes ▾</a>
+        <div class="dropdown-menu">
+          <a href="notes.html">Study Notes</a>
+          <a href="writeups.html">Writeups</a>
+        </div>
+      <li><a href="#contact">Contact</a></li>      
     </ul>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -772,9 +827,10 @@
       <li><a href="#about" onclick="closeMobileMenu()">About</a></li>
       <li><a href="#portfolio" onclick="closeMobileMenu()">Projects</a></li>
       <li><a href="#blog" onclick="closeMobileMenu()">Writeups</a></li>
-      <li><a href="security.html">SecOps</a></li>
-      <li><a href="rekognition.html">Analyze</a></li>
-      <li><a href="notes.html">Notes</a></li>
+      <li><a href="security.html" onclick="closeMobileMenu()">SecOps</a></li>
+      <li><a href="rekognition.html" onclick="closeMobileMenu()">Analyze</a></li>
+      <li><a href="notes.html" onclick="closeMobileMenu()">Study Notes</a></li>
+      <li><a href="writeups.html" onclick="closeMobileMenu()">Writeups</a></li>
       <li><a href="#contact" onclick="closeMobileMenu()">Contact</a></li>
     </ul>
   </div>
@@ -785,12 +841,12 @@
     <div class="hero-grid"></div>
     <div class="scanline"></div>
 
-    <p class="hero-eyebrow">// Cloud Cybersecurity — Barcelona</p>
+    <p class="hero-eyebrow">// Cloud Cybersecurity </p>
     <h1 class="hero-title">
       <span class="omega">OMEGA</span><br>
       <span class="nimbus">NIMBUS</span>
     </h1>
-    <p class="hero-sub">鬼 雲 &nbsp;·&nbsp; Oni + Nimbus</p>
+    <p class="hero-sub">End-to-End Cloud Security Solutions</p>
     <p class="hero-desc">
       Security research, cloud architecture, and threat analysis.
       AWS-certified. Offensive-minded. Defense-first.
@@ -820,42 +876,31 @@
       <div class="section-line"></div>
       <p>
         <strong>Cloud Security Engineer & Cyber Security Consultant</strong> based in Barcelona.
-        Currently at Azertium IT, focused on security risk assessment and GRC consulting
-        across enterprise environments.
       </p>
       <p>
-        AWS Certified across the full security path — Cloud Practitioner, Solutions Architect Associate,
-        and Security Specialty. Hands-on across both offensive and defensive disciplines:
-        OSINT, digital forensics, threat hunting, web application security, and network analysis.
+        History and Archaeology graduate turned cybersecurity consultant. 
+        That shift wasn't accidental — it reflects how I think: systems, context, patterns, risk.
       </p>
       <p>
         Background in Digital Humanities and critical thinking that shapes a unique approach to
         security: adversarial, analytical, and human-centered.
       </p>
       <div class="skills-wrap">
-        <span class="skill-tag">AWS Security</span>
         <span class="skill-tag">Cloud Architecture</span>
-        <span class="skill-tag">GRC / Risk</span>
-        <span class="skill-tag">Threat Hunting</span>
-        <span class="skill-tag">Web App Security</span>
-        <span class="skill-tag">Burp Suite</span>
-        <span class="skill-tag">OSINT</span>
-        <span class="skill-tag">Digital Forensics</span>
-        <span class="skill-tag">Python</span>
-        <span class="skill-tag">Network Analysis</span>
-        <span class="skill-tag">Blue Team</span>
-        <span class="skill-tag">Hack The Box</span>
+        <span class="skill-tag">GRC</span>
+        <span class="skill-tag">DevOps</span>
+        <span class="skill-tag">Cybersecurity</span>
       </div>
     </div>
 
     <div class="about-stats reveal">
       <div class="stat-card">
-        <div class="stat-number">3</div>
-        <div class="stat-label">AWS Certifications</div>
+        <div class="stat-number">+3</div>
+        <div class="stat-label">Cybersecurity and Cloud Certifications</div>
       </div>
       <div class="stat-card">
         <div class="stat-number">2+</div>
-        <div class="stat-label">Years in Cybersecurity</div>
+        <div class="stat-label">Years as a professional in Cybersecurity</div>
       </div>
       <div class="stat-card">
         <div class="stat-number">360°</div>
@@ -993,45 +1038,18 @@
   <div class="divider"></div>
 
   <!-- BLOG -->
-  <div id="blog">
-    <div class="portfolio-header reveal">
-      <p class="section-label">// Research & Writeups</p>
-      <h2 class="section-title">Writeups</h2>
-      <div class="section-line"></div>
-    </div>
-
-    <div class="blog-grid">
-      <div class="blog-card featured reveal">
-        <p class="blog-category">// AWS Security</p>
-        <p class="blog-date">Coming Soon</p>
-        <h3 class="blog-title">IAM Privilege Escalation: From ReadOnly to Admin in 4 Steps</h3>
-        <p class="blog-excerpt">
-          A walkthrough of a common IAM misconfiguration chain that allows an attacker with minimal initial permissions to achieve full administrative access in an AWS environment. Includes detection and remediation guidance.
-        </p>
-        <span class="blog-arrow">→</span>
-      </div>
-
-      <div class="blog-card reveal">
-        <p class="blog-category">// HTB Writeup</p>
-        <p class="blog-date">Coming Soon</p>
-        <h3 class="blog-title">HackTheBox: Chemistry</h3>
-        <p class="blog-excerpt">
-          Full walkthrough of the Chemistry machine — enumeration, foothold, privilege escalation.
-        </p>
-        <span class="blog-arrow">→</span>
-      </div>
-
-      <div class="blog-card reveal">
-        <p class="blog-category">// Cloud Architecture</p>
-        <p class="blog-date">Coming Soon</p>
-        <h3 class="blog-title">Designing Zero Trust on AWS: A Practical Approach</h3>
-        <p class="blog-excerpt">
-          Breaking down Zero Trust principles into concrete AWS implementation patterns: identity-first access, micro-segmentation, and continuous verification.
-        </p>
-        <span class="blog-arrow">→</span>
-      </div>
+<div id="blog">
+  <div class="portfolio-header reveal">
+    <p class="section-label">// Research & Writeups</p>
+    <h2 class="section-title">Writeups</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="blog-grid" id="writeups-grid">
+    <div class="blog-card featured reveal" style="text-align:center; padding: 3rem;">
+      <p class="blog-category" style="font-family: var(--mono); font-size: 0.7rem; color: var(--muted);">// Loading writeups...</p>
     </div>
   </div>
+</div>
 
   <div class="divider"></div>
 
@@ -1470,5 +1488,45 @@
     sendMessage();
   }
 </script>
+
+  // ─── WRITEUPS LOADER ───
+async function loadWriteups() {
+  const grid = document.getElementById('writeups-grid');
+  try {
+    const res = await fetch('https://api.github.com/repos/AlbertSicart/omeganimbus/contents/writeups');
+    const files = await res.json();
+    const mdFiles = files.filter(f => f.name.endsWith('.md')).reverse();
+
+    if (!mdFiles.length) {
+      grid.innerHTML = '<div class="blog-card featured reveal"><p class="blog-category">// No writeups yet</p></div>';
+      return;
+    }
+
+    const cards = mdFiles.map((file, i) => {
+      const name = file.name.replace('.md', '');
+      const parts = name.split('-');
+      const dayNum = parts[0];
+      const title = parts.slice(1).join(' ').replace(/\b\w/g, c => c.toUpperCase());
+      const featured = i === 0 ? 'featured' : '';
+      return `
+        <div class="blog-card ${featured} reveal">
+          <p class="blog-category">// Cloud Architecture · Day ${parseInt(dayNum)}</p>
+          <p class="blog-date">May 2026</p>
+          <h3 class="blog-title">${title}</h3>
+          <p class="blog-excerpt">Technical writeup documenting the OmegaNimbus Day ${parseInt(dayNum)} build session.</p>
+          <a href="${file.html_url}" target="_blank" rel="noopener" style="text-decoration:none;">
+            <span class="blog-arrow">→</span>
+          </a>
+        </div>
+      `;
+    });
+
+    grid.innerHTML = cards.join('');
+  } catch (err) {
+    grid.innerHTML = '<div class="blog-card featured reveal"><p class="blog-category">// Error loading writeups</p></div>';
+  }
+}
+loadWriteups();
+  
 </body>
 </html>
