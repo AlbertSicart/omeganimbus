@@ -1,4 +1,4 @@
-# OmegaNimbus Days 9 & 10: S3 Versioning & Lifecycle + VPC Network Architecture
+# OmegaNimbus Days 9: S3 Versioning & Lifecycle + VPC Network Architecture
 
 **Author:** Albert Sicart  
 **Domain:** omeganimbus.com  
@@ -9,12 +9,10 @@
 
 ## Overview
 
-Two sessions combined into one writeup:
-
-**Day 9 — S3 Versioning & Lifecycle**  
+**S3 Versioning & Lifecycle**  
 S3 versioning enabled on the main bucket with a lifecycle rule to automatically delete noncurrent object versions after 30 days — balancing data recovery capability with cost control.
 
-**Day 10 — VPC Network Architecture**  
+**VPC Network Architecture**  
 Custom VPC created with public and private subnets across two Availability Zones, Internet Gateway, route tables, S3 Gateway endpoint, and Security Group. Three Lambda functions migrated into the VPC. One Lambda (`omeganimbus-guardduty-dashboard`) kept outside the VPC due to its dependency on public AWS APIs without a NAT Gateway.
 
 Additionally, the GuardDuty security dashboard was updated with a **Resolved Findings** section — a static, curated table of the three real security findings detected and remediated during the project.
@@ -54,7 +52,7 @@ Security Group: omeganimbus-lambda-sg (sg-017126f8346b0a316)
 
 ---
 
-## Part 1 — S3 Versioning & Lifecycle (Day 9)
+## Part 1 — S3 Versioning & Lifecycle
 
 **Bucket:** `omeganimbus.com-cfn`
 
@@ -80,7 +78,7 @@ This means: when CodePipeline deploys a new version of `index.html`, the previou
 
 ---
 
-## Part 2 — VPC Network Architecture (Day 10)
+## Part 2 — VPC Network Architecture
 
 ### VPC Configuration
 
