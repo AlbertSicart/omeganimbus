@@ -416,7 +416,66 @@
         <p class="info-card-desc">Complete API audit log across all regions. KMS-encrypted at rest. Every action in this account is recorded and traceable.</p>
       </div>
     </div>
-
+    <!-- ─── RESOLVED FINDINGS ─── -->
+    <div style="margin-top: 3rem;">
+      <div class="section-header">
+        <div>
+          <p class="section-label">// Security Improvements</p>
+          <h2 class="section-title">Resolved Findings</h2>
+        </div>
+      </div>
+    
+      <div class="findings-container">
+        <table class="findings-table">
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Finding</th>
+              <th>Detected</th>
+              <th>Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="severity-badge sev-high">High 8.0</span></td>
+              <td>
+                <div class="finding-title">S3 Public Anonymous Access Granted</div>
+                <div class="finding-type">Policy:S3/BucketAnonymousAccessGranted · omeganimbus.com-cfn</div>
+              </td>
+              <td><div class="finding-date">2026-05-06 04:28 UTC</div></td>
+              <td><div class="finding-type">Migrated to CloudFront OAC. Block Public Access enabled. Bucket policy scoped to CloudFront distribution only.</div></td>
+            </tr>
+            <tr>
+              <td><span class="severity-badge sev-low">Low 2.0</span></td>
+              <td>
+                <div class="finding-title">S3 Block Public Access Disabled</div>
+                <div class="finding-type">Policy:S3/BucketBlockPublicAccessDisabled · omeganimbus.com-cfn</div>
+              </td>
+              <td><div class="finding-date">2026-05-06 04:28 UTC</div></td>
+              <td><div class="finding-type">Block Public Access enabled on all four settings. Resolved alongside OAC migration.</div></td>
+            </tr>
+            <tr>
+              <td><span class="severity-badge sev-low">Low 2.0</span></td>
+              <td>
+                <div class="finding-title">CloudTrail Logging Disabled</div>
+                <div class="finding-type">Stealth:IAMUser/CloudTrailLoggingDisabled</div>
+              </td>
+              <td><div class="finding-date">2026-05-06 04:13 UTC</div></td>
+              <td><div class="finding-type">CloudTrail re-enabled with KMS encryption. Permanent monitoring active via omeganimbus-trail.</div></td>
+            </tr>
+            <tr>
+              <td><span class="severity-badge sev-low">Low 2.0</span></td>
+              <td>
+                <div class="finding-title">Root Credential Usage — ListTopics / ListRoles</div>
+                <div class="finding-type">Policy:IAMUser/RootCredentialUsage</div>
+              </td>
+              <td><div class="finding-date">2026-05-06 04:07 UTC</div></td>
+              <td><div class="finding-type">Root account usage discontinued. All subsequent operations performed via IAM user with least privilege roles.</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- FOOTER -->
