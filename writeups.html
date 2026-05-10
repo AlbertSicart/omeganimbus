@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmegaNimbus — Writeups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #05070d;
+      --deep:    #0a0d17;
+      --surface: #0f1220;
+      --card:    #131724;
+      --border:  rgba(255,255,255,0.06);
+      --red:     #c0392b;
+      --red-hot: #e74c3c;
+      --white:   #f0f0f0;
+      --muted:   #6b7280;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--body);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(5,7,13,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2.5rem;
+    }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--white); }
+
+    .nav-dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(5,7,13,0.97);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0;
+      min-width: 140px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 200;
+    }
+    .nav-dropdown:hover .dropdown-menu { opacity: 1; pointer-events: all; }
+    .dropdown-menu a {
+      display: block;
+      padding: 0.5rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .dropdown-menu a:hover { color: var(--white); }
+
+    /* ─── HERO ─── */
+    .page-hero {
+      padding: 8rem 3rem 4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title span { color: var(--red); }
+
+    .page-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.8;
+    }
+
+    /* ─── MAIN ─── */
+    .main-content { padding: 3rem; }
+
+    /* ─── TABS ─── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .tab-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--white); border-bottom-color: var(--red); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ─── WRITEUP CARDS ─── */
+    .writeups-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .writeup-card {
+      background: var(--card);
+      padding: 2rem 2.5rem;
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 2rem;
+      align-items: center;
+      transition: background 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .writeup-card:hover { background: #161b2e; }
+
+    .writeup-day {
+      font-family: var(--display);
+      font-size: 2.5rem;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    .writeup-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .writeup-category {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+
+    .writeup-title {
+      font-family: var(--display);
+      font-size: 1.3rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+    }
+
+    .writeup-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .writeup-arrow {
+      font-family: var(--mono);
+      font-size: 1.2rem;
+      color: var(--muted);
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .writeup-card:hover .writeup-arrow { color: var(--red); transform: translateX(4px); }
+
+    /* ─── LOADING / ERROR ─── */
+    .state-loading, .state-error {
+      padding: 4rem;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+    .state-loading::before { content: '// '; color: var(--red); }
+    .state-error { color: var(--red-hot); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--white); }
+
+    /* ─── CHAT WIDGET ─── */
+    #chat-toggle {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 500;
+      width: 52px; height: 52px; background: var(--red); border: none;
+      border-radius: 50%; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+    #chat-toggle:hover { background: var(--red-hot); transform: scale(1.05); }
+    #chat-toggle svg { width: 22px; height: 22px; fill: white; }
+    #chat-window {
+      position: fixed; bottom: 5.5rem; right: 2rem; z-index: 500;
+      width: 360px; max-height: 520px; background: var(--card);
+      border: 1px solid var(--border); display: flex; flex-direction: column;
+      transform: translateY(10px); opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    #chat-window.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .chat-header {
+      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface);
+    }
+    .chat-header-title { font-family: var(--display); font-size: 1rem; letter-spacing: 0.1em; }
+    .chat-header-title span { color: var(--red); }
+    .chat-header-sub { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.15em; color: var(--muted); margin-top: 0.1rem; }
+    .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; transition: color 0.2s; }
+    .chat-close:hover { color: var(--white); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 280px; max-height: 340px; }
+    .chat-messages::-webkit-scrollbar { width: 2px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--red); }
+    .msg { max-width: 85%; padding: 0.6rem 0.85rem; font-size: 0.82rem; line-height: 1.5; }
+    .msg.bot { background: var(--surface); border: 1px solid var(--border); color: var(--white); align-self: flex-start; border-radius: 0 6px 6px 6px; }
+    .msg.user { background: var(--red); color: white; align-self: flex-end; border-radius: 6px 0 6px 6px; font-family: var(--mono); font-size: 0.75rem; }
+    .msg.typing { background: var(--surface); border: 1px solid var(--border); color: var(--muted); align-self: flex-start; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; }
+    .chat-input-area { padding: 0.75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
+    .chat-input { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--white); font-family: var(--mono); font-size: 0.72rem; padding: 0.5rem 0.75rem; outline: none; transition: border-color 0.2s; }
+    .chat-input:focus { border-color: var(--red); }
+    .chat-input::placeholder { color: var(--muted); }
+    .chat-send { background: var(--red); border: none; color: white; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; padding: 0.5rem 0.85rem; cursor: pointer; transition: background 0.2s; }
+    .chat-send:hover { background: var(--red-hot); }
+    .chat-suggestions { padding: 0.5rem 1rem 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .suggestion { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.1em; color: var(--muted); border: 1px solid var(--border); padding: 0.25rem 0.5rem; cursor: pointer; transition: color 0.2s, border-color 0.2s; background: none; }
+    .suggestion:hover { color: var(--white); border-color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">OMEGA<span>NIMBUS</span></a>
+    <ul>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#portfolio">Projects</a></li>
+      <li><a href="security.html">SecOps</a></li>
+      <li><a href="rekognition.html">Analyze</a></li>
+      <li class="nav-dropdown">
+        <a href="#">Notes ▾</a>
+        <div class="dropdown-menu">
+          <a href="notes.html">Study Notes</a>
+          <a href="writeups.html">Writeups</a>
+        </div>
+      </li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <p class="page-eyebrow">// Research & Documentation</p>
+    <h1 class="page-title">WRITE<br><span>UPS</span></h1>
+    <p class="page-desc">
+      Technical documentation of the OmegaNimbus build — every architecture decision, debugging session, and security finding. Built in production, documented in detail.
+    </p>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('omeganimbus')">// OmegaNimbus Build</button>
+      <button class="tab-btn" onclick="switchTab('security')">// Security Research</button>
+    </div>
+
+    <!-- TAB: OMEGANIMBUS -->
+    <div class="tab-content active" id="tab-omeganimbus">
+      <div class="writeups-grid" id="writeups-grid">
+        <div class="state-loading">Loading writeups from GitHub...</div>
+      </div>
+    </div>
+
+    <!-- TAB: SECURITY RESEARCH -->
+    <div class="tab-content" id="tab-security">
+      <div class="writeups-grid">
+        <div class="writeup-card" style="cursor:default;">
+          <div class="writeup-day" style="font-size:1.5rem; color: var(--muted);">Soon</div>
+          <div class="writeup-meta">
+            <p class="writeup-category">// HTB Writeup</p>
+            <h3 class="writeup-title">HackTheBox: Chemistry</h3>
+            <p class="writeup-desc">Full walkthrough — enumeration, foothold, privilege escalation.</p>
+          </div>
+          <span class="writeup-arrow" style="opacity:0.3;">→</span>
+        </div>
+        <div class="writeup-card" style="cursor:default;">
+          <div class="writeup-day" style="font-size:1.5rem; color: var(--muted);">Soon</div>
+          <div class="writeup-meta">
+            <p class="writeup-category">// AWS Security</p>
+            <h3 class="writeup-title">IAM Privilege Escalation: From ReadOnly to Admin</h3>
+            <p class="writeup-desc">A walkthrough of a common IAM misconfiguration chain leading to full account compromise.</p>
+          </div>
+          <span class="writeup-arrow" style="opacity:0.3;">→</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>OMEGANIMBUS · <a href="index.html">omeganimbus.com</a></p>
+    <p>S3 · CloudFront · CodePipeline · GitHub</p>
+  </footer>
+
+  <!-- CHAT WIDGET -->
+  <button id="chat-toggle" onclick="toggleChat()" title="Ask me anything">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+    </svg>
+  </button>
+
+  <div id="chat-window">
+    <div class="chat-header">
+      <div>
+        <div class="chat-header-title">OMEGA<span>NIMBUS</span></div>
+        <div class="chat-header-sub">// ASSISTANT · POWERED BY AWS LEX</div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-suggestions" id="chat-suggestions">
+      <button class="suggestion" onclick="sendSuggestion('Who are you?')">Who are you?</button>
+      <button class="suggestion" onclick="sendSuggestion('Show me your projects')">Projects</button>
+      <button class="suggestion" onclick="sendSuggestion('What certifications do you have?')">Certifications</button>
+      <button class="suggestion" onclick="sendSuggestion('How can I contact you?')">Contact</button>
+    </div>
+    <div class="chat-input-area">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter') sendMessage()" />
+      <button class="chat-send" onclick="sendMessage()">SEND</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── TABS ───
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // ─── WRITEUPS LOADER ───
+    const WRITEUP_DESCRIPTIONS = {
+      '01': 'S3 static hosting, CloudFront CDN, ACM certificate, SES identity verification, Lambda + API Gateway contact form.',
+      '02': 'IAM least privilege roles, DynamoDB visitor counter, CodePipeline CI/CD connected to GitHub.',
+      '03': 'GuardDuty, CloudTrail with KMS encryption, Security Hub, full CloudFormation migration.',
+      '04': 'EventBridge + SNS automated alerts, real-time GuardDuty dashboard via Lambda + API Gateway.',
+      '05': 'Rekognition pipeline (labels, text, faces) + Amazon Bedrock Claude Haiku for AI image descriptions.',
+      '06': 'Amazon Lex V2 chatbot with 6 intents, Lambda handler, POST /chat endpoint, floating widget.',
+      '07': 'Route 53 DNS migration from DonDominio, AWS Budgets alarm, Cost Anomaly Detection.',
+      '08': 'CloudWatch dashboards + alarms, AWS Config compliance rules, S3 + CloudFront OAC security hardening.',
+      '09': 'S3 versioning + lifecycle, VPC with public/private subnets, Lambda VPC integration, security dashboard improvements.',
+    };
+
+    const WRITEUP_CATEGORIES = {
+      '01': 'Static Hosting · CDN · TLS',
+      '02': 'IAM · DynamoDB · CI/CD',
+      '03': 'Security Monitoring · IaC',
+      '04': 'Alerting · Threat Dashboard',
+      '05': 'Computer Vision · AI',
+      '06': 'Conversational AI · Lex',
+      '07': 'DNS · FinOps',
+      '08': 'Observability · Compliance · Security',
+      '09': 'S3 · VPC · Networking',
+    };
+
+    async function loadWriteups() {
+      const grid = document.getElementById('writeups-grid');
+      try {
+        const res = await fetch('https://api.github.com/repos/AlbertSicart/omeganimbus/contents/writeups');
+        const files = await res.json();
+        const mdFiles = files.filter(f => f.name.endsWith('.md')).sort((a, b) => b.name.localeCompare(a.name));
+
+        if (!mdFiles.length) {
+          grid.innerHTML = '<div class="state-loading">No writeups found.</div>';
+          return;
+        }
+
+        const cards = mdFiles.map(file => {
+          const name = file.name.replace('.md', '');
+          const dayNum = name.split('-')[0];
+          const dayInt = parseInt(dayNum);
+          const category = WRITEUP_CATEGORIES[dayNum] || '// Cloud Architecture';
+          const desc = WRITEUP_DESCRIPTIONS[dayNum] || 'Technical documentation of the OmegaNimbus build session.';
+
+          const titleParts = name.split('-').slice(1);
+          const title = titleParts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+          return `
+            <a class="writeup-card" href="${file.html_url}" target="_blank" rel="noopener">
+              <div class="writeup-day">D${dayInt < 10 ? '0' + dayInt : dayInt}</div>
+              <div class="writeup-meta">
+                <p class="writeup-category">// ${category}</p>
+                <h3 class="writeup-title">${title}</h3>
+                <p class="writeup-desc">${desc}</p>
+              </div>
+              <span class="writeup-arrow">→</span>
+            </a>
+          `;
+        });
+
+        grid.innerHTML = cards.join('');
+      } catch (err) {
+        grid.innerHTML = `<div class="state-error">// Error loading writeups: ${err.message}</div>`;
+      }
+    }
+
+    loadWriteups();
+
+    // ─── CHAT ───
+    const CHAT_API = 'https://judzwkiy9h.execute-api.eu-north-1.amazonaws.com/chat';
+    let sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+    let chatOpen = false;
+    let greeted = false;
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chat-window').classList.toggle('open', chatOpen);
+      if (chatOpen && !greeted) {
+        greeted = true;
+        addMessage('bot', "Hi — I'm the OmegaNimbus assistant. Ask me about Albert's skills, projects, certifications, or how to get in touch.");
+      }
+      if (chatOpen) setTimeout(() => document.getElementById('chat-input').focus(), 200);
+    }
+
+    function addMessage(role, text) {
+      const el = document.createElement('div');
+      el.className = 'msg ' + role;
+      el.textContent = text;
+      const container = document.getElementById('chat-messages');
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+      return el;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      document.getElementById('chat-suggestions').style.display = 'none';
+      addMessage('user', text);
+      const typing = addMessage('typing', '// thinking...');
+      try {
+        const res = await fetch(CHAT_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, sessionId })
+        });
+        const data = await res.json();
+        typing.remove();
+        addMessage('bot', data.reply);
+      } catch (err) {
+        typing.remove();
+        addMessage('bot', 'Connection error. Try again.');
+      }
+    }
+
+    function sendSuggestion(text) {
+      document.getElementById('chat-input').value = text;
+      sendMessage();
+    }
+  </script>
+</body>
+</html>
