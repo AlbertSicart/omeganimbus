@@ -398,25 +398,7 @@
       <div class="state-loading">Connecting to GuardDuty API...</div>
     </div>
 
-    <!-- INFO CARDS -->
-    <div class="info-grid">
-      <div class="info-card">
-        <p class="info-card-label">// Detection</p>
-        <h3 class="info-card-title">AWS GuardDuty</h3>
-        <p class="info-card-desc">Intelligent threat detection analyzing VPC Flow Logs, DNS logs, and CloudTrail events. Active since Day 3 of the OmegaNimbus build.</p>
-      </div>
-      <div class="info-card">
-        <p class="info-card-label">// Alerting</p>
-        <h3 class="info-card-title">EventBridge + SNS</h3>
-        <p class="info-card-desc">Automated alert pipeline triggers on findings with severity ≥ 4 (Medium, High, Critical). Email notification delivered in under 60 seconds.</p>
-      </div>
-      <div class="info-card">
-        <p class="info-card-label">// Audit</p>
-        <h3 class="info-card-title">CloudTrail</h3>
-        <p class="info-card-desc">Complete API audit log across all regions. KMS-encrypted at rest. Every action in this account is recorded and traceable.</p>
-      </div>
-    </div>
-    <!-- ─── RESOLVED FINDINGS ─── -->
+        <!-- ─── RESOLVED FINDINGS ─── -->
     <div style="margin-top: 3rem;">
       <div class="section-header">
         <div>
@@ -442,8 +424,8 @@
                 <div class="finding-title">S3 Public Anonymous Access Granted</div>
                 <div class="finding-type">Policy:S3/BucketAnonymousAccessGranted · omeganimbus.com-cfn</div>
               </td>
-              <td><div class="finding-date">2026-05-06 04:28 UTC</div></td>
-              <td><div class="finding-type">Migrated to CloudFront OAC. Block Public Access enabled. Bucket policy scoped to CloudFront distribution only.</div></td>
+              <td><div class="finding-date">2026-05-06 04:23 UTC</div></td>
+              <td><div class="finding-type">Migrated to CloudFront OAC. Block Public Access enabled. Bucket policy scoped to CloudFront distribution ARN only.</div></td>
             </tr>
             <tr>
               <td><span class="severity-badge sev-low">Low 2.0</span></td>
@@ -451,31 +433,42 @@
                 <div class="finding-title">S3 Block Public Access Disabled</div>
                 <div class="finding-type">Policy:S3/BucketBlockPublicAccessDisabled · omeganimbus.com-cfn</div>
               </td>
-              <td><div class="finding-date">2026-05-06 04:28 UTC</div></td>
-              <td><div class="finding-type">Block Public Access enabled on all four settings. Resolved alongside OAC migration.</div></td>
+              <td><div class="finding-date">2026-05-06 04:23 UTC</div></td>
+              <td><div class="finding-type">All four Block Public Access settings enabled. Resolved as part of OAC migration.</div></td>
             </tr>
             <tr>
               <td><span class="severity-badge sev-low">Low 2.0</span></td>
               <td>
                 <div class="finding-title">CloudTrail Logging Disabled</div>
-                <div class="finding-type">Stealth:IAMUser/CloudTrailLoggingDisabled</div>
+                <div class="finding-type">Stealth:IAMUser/CloudTrailLoggingDisabled · omeganimbus-trail</div>
               </td>
-              <td><div class="finding-date">2026-05-06 04:13 UTC</div></td>
-              <td><div class="finding-type">CloudTrail re-enabled with KMS encryption. Permanent monitoring active via omeganimbus-trail.</div></td>
-            </tr>
-            <tr>
-              <td><span class="severity-badge sev-low">Low 2.0</span></td>
-              <td>
-                <div class="finding-title">Root Credential Usage — ListTopics / ListRoles</div>
-                <div class="finding-type">Policy:IAMUser/RootCredentialUsage</div>
-              </td>
-              <td><div class="finding-date">2026-05-06 04:07 UTC</div></td>
-              <td><div class="finding-type">Root account usage discontinued. All subsequent operations performed via IAM user with least privilege roles.</div></td>
+              <td><div class="finding-date">2026-05-06 04:05 UTC</div></td>
+              <td><div class="finding-type">CloudTrail re-enabled with KMS encryption. Permanent monitoring active. Root account usage discontinued.</div></td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- INFO CARDS -->
+    <div class="info-grid">
+      <div class="info-card">
+        <p class="info-card-label">// Detection</p>
+        <h3 class="info-card-title">AWS GuardDuty</h3>
+        <p class="info-card-desc">Intelligent threat detection analyzing VPC Flow Logs, DNS logs, and CloudTrail events. Active since Day 3 of the OmegaNimbus build.</p>
+      </div>
+      <div class="info-card">
+        <p class="info-card-label">// Alerting</p>
+        <h3 class="info-card-title">EventBridge + SNS</h3>
+        <p class="info-card-desc">Automated alert pipeline triggers on findings with severity ≥ 4 (Medium, High, Critical). Email notification delivered in under 60 seconds.</p>
+      </div>
+      <div class="info-card">
+        <p class="info-card-label">// Audit</p>
+        <h3 class="info-card-title">CloudTrail</h3>
+        <p class="info-card-desc">Complete API audit log across all regions. KMS-encrypted at rest. Every action in this account is recorded and traceable.</p>
+      </div>
+    </div>
+   
   </div>
 
   <!-- FOOTER -->
