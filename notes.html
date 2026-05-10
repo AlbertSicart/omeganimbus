@@ -93,7 +93,7 @@
     align-items: center;
     }
     
-    /* ─── NAV DROPDOWN ─── */
+     /* ─── NAV DROPDOWN ─── */
     .nav-dropdown {
       position: relative;
       display: flex;
@@ -104,7 +104,9 @@
       align-items: center;
       gap: 0.3rem;
     }
-    .nav-links .nav-dropdown > a::after { content: none; }
+    .nav-links .nav-dropdown > a::after {
+      content: none;
+    }
     .nav-dropdown > a .arrow {
       font-size: 0.55rem;
       color: var(--muted);
@@ -114,12 +116,14 @@
     .nav-dropdown:hover > a .arrow { transform: rotate(180deg); }
     .dropdown-menu {
       position: absolute;
-      top: calc(100% + 0.75rem);
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(5,7,13,0.97);
       border: 1px solid var(--border);
       padding: 0.5rem 0;
+      padding-top: 0.75rem;
+      padding-bottom: 0.5rem;
       min-width: 140px;
       opacity: 0;
       pointer-events: none;
