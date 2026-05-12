@@ -8,7 +8,7 @@
 
 ## Architecture
 
-![OmegaNimbus AWS Architecture](docs/architecture.png)
+![OmegaNimbus AWS Architecture](docs/architecture11.png)
 
 **Regions:** eu-north-1 (Stockholm) · eu-west-1 (Ireland) · Global  
 **Stack:** S3 · CloudFront · Route 53 · Lambda · API Gateway · DynamoDB · SES · GuardDuty · CloudTrail · Security Hub · EventBridge · SNS · CloudFormation · CodePipeline · Rekognition · Bedrock · Amazon Lex V2
