@@ -77,10 +77,12 @@ S3 versioning and lifecycle policies on the main bucket. Custom VPC with public 
 
 ### Day 10 — WAF + Shield + GuardDuty Improvements ✅
 *10-05-2026*
+
 AWS WAF on CloudFront with rate limiting and geo-blocking rules. Shield Standard review. GuardDuty sample findings generator integrated into the security dashboard.
 
 ### Day 11 — Security Monitoring Stack & Cloud Observability ✅
 *11-05-2026*
+
 EC2-based monitoring stack with Prometheus, Grafana, and on-demand activation via Lambda + EventBridge. ALB with HTTPS termination exposing Grafana at siem.omeganimbus.com (not a real siem, yet). CloudWatch observability layer with CloudTrail, GuardDuty, and a centralized Security Operations dashboard.
 
 ---
