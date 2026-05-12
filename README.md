@@ -69,23 +69,24 @@ Full DNS migration from DonDominio to Route 53. Hosted Zone, A Alias + CNAME rec
 
 CloudWatch dashboards with real metrics: API Gateway latency, Lambda errors, DynamoDB read/write capacity. Alarms configured. AWS Config enabled with baseline compliance rules.
 
-### Day 9 —  S3 Lifecycle + VPC ✅
+### Day 9 —  S3 Lifecycle + VPC 
 *09-05-2026*
 
 S3 versioning and lifecycle policies on the main bucket. Custom VPC with public and private subnets, security groups, route tables, and NAT Gateway. Lambda functions moved inside the VPC. Core SAA-C03 networking concepts applied to production infrastructure.
 
 
+### Day 10 — WAF + Shield + GuardDuty Improvements ✅
+AWS WAF on CloudFront with rate limiting and geo-blocking rules. Shield Standard review. GuardDuty sample findings generator integrated into the security dashboard.
+
+### Day 11 — Security Monitoring Stack & Cloud Observability ✅
+EC2-based monitoring stack with Prometheus, Grafana, and on-demand activation via Lambda + EventBridge. ALB with HTTPS termination exposing Grafana at siem.omeganimbus.com (not a real siem, yet). CloudWatch observability layer with CloudTrail, GuardDuty, and a centralized Security Operations dashboard.
 
 ---
 
 ## Upcoming
 
 
-
-### Day 10 — WAF + Shield + GuardDuty Improvements
-AWS WAF on CloudFront with rate limiting and geo-blocking rules. Shield Standard review. GuardDuty sample findings generator integrated into the security dashboard.
-
-### Day 11 — RDS + DynamoDB Streams
+### Day 12 — RDS + DynamoDB Streams
 Relational database layer with RDS. DynamoDB Streams with reactive Lambda — event-driven architecture pattern.
 
 ---
